@@ -30,10 +30,10 @@ int main() {
     for (int i=0; i<N; i++) {
 
         cudaEventRecord(start, 0);
-        dim3 dimGrid(83333,20,1);
-        dim3 dimBlock(1024);
+        dim3 dimGrid(81333,20,3);
+        dim3 dimBlock(72);
         auto bytes = 1024 * sizeof(thrust::complex<float>);
-        EmptyKernel<<<dimGrid,dimBlock>>>();
+        EmptyKernel<<<dimGrid,dimBlock,bytes>>>();
         throw_on_cuda_error(cudaPeekAtLastError(), __FILE__,__LINE__);
         cudaEventRecord(stop, 0);
         cudaEventSynchronize(stop);

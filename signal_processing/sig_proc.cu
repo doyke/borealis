@@ -101,7 +101,7 @@ __global__ void decimate(T_COMPLEX_F* original_samples,
     auto dec_sample_offset = dec_sample_num * dm_rate;
 
     auto tap_offset = threadIdx.x;
-    auto bp_filter_offset = blockIdx.z * blockIdx.x;
+    auto bp_filter_offset = blockIdx.z * blockDim.x;
 
     T_COMPLEX_F sample;
     if ((dec_sample_offset + tap_offset) >= num_original_samples) {
@@ -140,6 +140,143 @@ __global__ void decimate(T_COMPLEX_F* original_samples,
 
 }
 
+
+__global__ void decimatev2(T_COMPLEX_F* original_samples,
+    T_COMPLEX_F* decimated_samples,
+    T_COMPLEX_F* filter_taps, uint32_t dm_rate,
+    uint32_t num_original_samples, uint32_t num_taps) {
+
+    extern __shared__ T_COMPLEX_F local_filter_taps[];
+
+/*    if (threadIdx.x < num_taps) {
+        auto filter_offset = blockIdx.z * num_taps;
+        local_filter_taps[threadIdx.x] = filter_taps[filter_offset + threadIdx.x];
+    }
+    __syncthreads();*/
+
+    auto channel_num = blockIdx.y;
+    auto channel_offset = channel_num * num_original_samples;
+
+    auto dec_sample_num = threadIdx.x;
+    auto dec_sample_offset = dec_sample_num * dm_rate;
+
+
+    auto convolve = T_COMPLEX_F(0.0,0.0);
+/*    for (uint32_t i=0; i<num_taps; i++) {
+        if ((dec_sample_offset + i) < num_original_samples) {
+            convolve += original_samples[dec_sample_offset + i] * filter_taps[i];
+        }
+    }*/
+
+    channel_offset = channel_num * num_original_samples/dm_rate;
+    auto total_channels = blockDim.y;
+    auto freq_offset = blockIdx.z * total_channels;
+    auto total_offset = freq_offset + channel_offset + dec_sample_num;
+    decimated_samples[total_offset] = convolve;
+}
+
+
+__global__ void decimatev3(T_COMPLEX_F* original_samples,
+    T_COMPLEX_F* decimated_samples,
+    T_COMPLEX_F* filter_taps, uint32_t dm_rate,
+    uint32_t num_original_samples) {
+
+    extern __shared__ T_COMPLEX_F filter_products[];
+
+    auto channel_num = blockIdx.y;
+    auto channel_offset = channel_num * num_original_samples;
+
+    auto dec_sample_num = blockIdx.x;
+    auto dec_sample_offset = dec_sample_num * dm_rate;
+
+    auto tap_offset = threadIdx.y * blockDim.y + threadIdx.x;
+
+    T_COMPLEX_F sample;
+    if ((dec_sample_offset + threadIdx.x) >= num_original_samples) {
+        sample = T_COMPLEX_F(0.0,0.0);
+    }
+    else {
+        auto final_offset = channel_offset + dec_sample_offset + threadIdx.x;
+        sample = original_samples[final_offset];
+    }
+
+
+    filter_products[threadIdx.x] = sample * filter_taps[tap_offset];
+
+    __syncthreads();
+
+
+    //Simple parallel sum/reduction algorithm
+    //http://developer.download.nvidia.com/compute/cuda/1.1-Beta/x86_website/projects/reduction/doc/reduction.pdf
+    auto num_taps = blockDim.x;
+    for(uint32_t stride=num_taps/2; stride>0; stride>>=1) {
+        if (tap_offset < stride) {
+            filter_products[tap_offset] = filter_products[tap_offset] +
+                                            filter_products[tap_offset + stride];
+
+        }
+        __syncthreads();
+    }
+
+    if (threadIdx.x == 0) {
+        channel_offset = channel_num * num_original_samples/dm_rate;
+        auto total_channels = blockDim.y;
+        auto freq_offset = threadIdx.y * total_channels;
+        auto total_offset = freq_offset + channel_offset + dec_sample_num;
+        decimated_samples[total_offset] = filter_products[tap_offset];
+    }
+}
+
+__global__ void filter(T_COMPLEX_F* original_samples,
+    T_COMPLEX_F* decimated_samples,
+    T_COMPLEX_F* filter_taps, uint32_t dm_rate,
+    uint32_t num_original_samples) {
+
+    extern __shared__ T_COMPLEX_F filter_products[];
+
+    auto channel_num = blockIdx.y;
+    auto channel_offset = channel_num * num_original_samples;
+
+    auto dec_sample_num = blockIdx.x;
+    auto dec_sample_offset = dec_sample_num * dm_rate;
+
+    auto tap_offset = blockIdx.z * blockDim.x + threadIdx.x;
+
+    T_COMPLEX_F sample;
+    if ((dec_sample_num + threadIdx.x) >= num_original_samples) {
+        sample = T_COMPLEX_F(0.0,0.0);
+    }
+    else {
+        auto final_offset = channel_offset + dec_sample_num + threadIdx.x;
+        sample = original_samples[final_offset];
+    }
+
+
+    filter_products[threadIdx.x] = sample * filter_taps[tap_offset];
+
+    __syncthreads();
+
+
+    //Simple parallel sum/reduction algorithm
+    //http://developer.download.nvidia.com/compute/cuda/1.1-Beta/x86_website/projects/reduction/doc/reduction.pdf
+    auto num_taps = blockDim.x;
+    for(uint32_t stride=num_taps/2; stride>0; stride>>=1) {
+        if (tap_offset < stride) {
+            filter_products[threadIdx.x] = filter_products[threadIdx.x] +
+                                            filter_products[threadIdx.x + stride];
+
+        }
+        __syncthreads();
+    }
+
+    if (threadIdx.x == 0) {
+        channel_offset = channel_num * num_original_samples;
+        auto total_channels = blockDim.y;
+        auto freq_offset = blockIdx.z * total_channels;
+        auto total_offset = freq_offset + channel_offset + dec_sample_num;
+        decimated_samples[total_offset] = filter_products[threadIdx.x];
+    }
+}
 
 void print_gpu_properties(std::vector<cudaDeviceProp> gpu_properties) {
     for(auto i : gpu_properties) {
@@ -355,7 +492,7 @@ int main(int argc, char **argv){
 
         timing_start = std::chrono::steady_clock::now();
 
-        auto num_blocks_x = cp.numberofreceivesamples()/first_stage_dm_rate;
+        auto num_blocks_x = (cp.numberofreceivesamples()/first_stage_dm_rate);
         std::cout << num_blocks_x << std::endl;
         auto num_blocks_y = rp.num_channels();
         std::cout << num_blocks_y << std::endl;
@@ -370,23 +507,33 @@ int main(int argc, char **argv){
 
         auto num_threads_x = filtertaps_1.size();
         std::cout << num_threads_x << std::endl;
-        dim3 dimBlock(num_threads_x);
+        auto num_threads_y = rx_freqs.size();
+        std::cout << num_threads_y << std::endl;
+        dim3 dimBlock(num_threads_x,1);
 
         auto num_output_samples = rx_freqs.size() * cp.numberofreceivesamples()/first_stage_dm_rate
                                         * rp.num_channels();
         auto stage_1_output = T_DEVICE_V(T_COMPLEX_F)(num_output_samples,T_COMPLEX_F(1.0,0.0));
         throw_on_cuda_error(cudaPeekAtLastError(), __FILE__,__LINE__);
 
+        cudaEvent_t start_t, stop_t;
+        float time = 0.0;
+        cudaEventCreate(&start_t);
+        cudaEventCreate(&stop_t);
+        cudaEventRecord(start_t, 0);
         auto rf_samples_p = thrust::raw_pointer_cast(rf_samples.data());
         auto stage_1_output_p = thrust::raw_pointer_cast(stage_1_output.data());
+        auto filter_p = thrust::raw_pointer_cast(filtertaps_1_bp_d.data());
         auto shr_mem_taps = filtertaps_1.size() * sizeof(T_COMPLEX_F);
         std::cout << shr_mem_taps << std::endl;
-        auto filter_p = thrust::raw_pointer_cast(filtertaps_1_bp_d.data());
-
         decimate<<<dimGrid,dimBlock,shr_mem_taps>>>(rf_samples_p, stage_1_output_p, filter_p,
-                    filtertaps_1.size(), cp.numberofreceivesamples());
+                    first_stage_dm_rate, cp.numberofreceivesamples());
         throw_on_cuda_error(cudaPeekAtLastError(), __FILE__,__LINE__);
         cudaDeviceSynchronize();
+        cudaEventRecord(stop_t, 0);
+        cudaEventSynchronize(stop_t);
+        cudaEventElapsedTime(&time, start_t, stop_t);
+        printf("decimate timing:  %3.5f ms \n", time);
         for(int i = 0; i < 10; i++) {
             std::cout << "output_samples[" << i << "] = " << stage_1_output[i] << std::endl;
         }
