@@ -20,7 +20,7 @@ extern "C" {
 }
 
 #define T_DEVICE_V(x) thrust::device_vector<x>
-#define T_HOST_V(x) thrust::device_vector<x>
+#define T_HOST_V(x) thrust::host_vector<x>
 #define T_COMPLEX_F thrust::complex<float>
 
 #define FIRST_STAGE_SAMPLE_RATE 1.0e6 //1 MHz
