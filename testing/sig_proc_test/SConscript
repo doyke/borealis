@@ -36,3 +36,10 @@ Prog('decimate_single_core', Glob("./decimate_single_core.cpp"), with_libs='util
      LIBS=['protobuf','pthread','zmq'])
 
 Prog('cuda_kernel_timing', Glob("./cuda_kernel_timing.cu"), with_libs='utils::utils')
+
+Prog('fft_convolve_test', Glob("./fft_convolve_test.cu"), with_libs='utils::utils',LIBS=['cufft'])
+
+#Prog('arrayfire_test', Glob("./arrayfire_test.cu"), with_libs='utils::utils',
+#        LIBS=['af','afcpu','afcuda'])
+
+Prog('decimate', Glob("./decimate.cu"), with_libs='utils::utils')

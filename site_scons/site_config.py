@@ -92,6 +92,7 @@ ENV_EXTENSIONS = {
         NVCCFLAGS = ['-gencode', 'arch=compute_30,code=sm_30'],
         # Modules should be able to include relative to build root dir
         CPPPATH = ['#$BUILDROOT'],
+        LINKFLAGS=['-L/usr/local/cuda-8.0/nvvm/lib64'],
     ),
     'debug': dict(
         # Extra flags for debug C++ builds
@@ -100,7 +101,7 @@ ENV_EXTENSIONS = {
     ),
     'release': dict(
         # Extra flags for release C++ builds
-        CCFLAGS = ['-O2', '-DNDEBUG'],
+        CCFLAGS = ['-DNDEBUG'],
     ),
 }
 
