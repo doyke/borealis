@@ -11,11 +11,11 @@
 #define T_HOST_V(x) thrust::host_vector<x>
 #define T_COMPLEX_F thrust::complex<float>
 
-#define NUM_SAMPLES 1000000
+#define NUM_SAMPLES 8333
 #define NUM_CHANNELS 20
-#define NUM_FILTER_TAPS 72
+#define NUM_FILTER_TAPS 360
 #define NUM_FREQUENCIES 3
-#define DECIMATION_RATE 12
+#define DECIMATION_RATE 30
 
 
 void throw_on_cuda_error(cudaError_t code, const char *file, int line)
@@ -89,6 +89,8 @@ __global__ void decimatev1(T_COMPLEX_F* original_samples,
 
 }
 
+
+
 int roundUp(int numToRound, int multiple)
 {
     if (multiple == 0)
@@ -99,6 +101,84 @@ int roundUp(int numToRound, int multiple)
         return numToRound;
 
     return numToRound + multiple - remainder;
+}
+
+
+__global__ void decimatev2(T_COMPLEX_F* original_samples,
+    T_COMPLEX_F* decimated_samples,
+    T_COMPLEX_F* filter_taps, uint32_t dm_rate,
+    uint32_t num_original_samples) {
+
+    extern __shared__ T_COMPLEX_F filter_products[];
+
+    auto channel_num = blockIdx.y;
+    auto channel_offset = channel_num * num_original_samples;
+
+    auto dec_sample_num = blockIdx.x;
+    auto dec_sample_offset = dec_sample_num * dm_rate;
+
+    auto tap_offset = threadIdx.y * blockDim.y + 2 * threadIdx.x;
+
+    T_COMPLEX_F sample_1;
+    T_COMPLEX_F sample_2;
+    if ((dec_sample_offset + 2 * threadIdx.x) >= num_original_samples) {
+        sample_1 = T_COMPLEX_F(0.0,0.0);
+        sample_2 = T_COMPLEX_F(0.0,0.0);
+    }
+    else {
+        auto final_offset = channel_offset + dec_sample_offset + 2*threadIdx.x;
+        sample_1 = original_samples[final_offset];
+        sample_2 = original_samples[final_offset+1];
+    }
+
+
+    filter_products[threadIdx.x] = sample_1 * filter_taps[tap_offset];
+    filter_products[threadIdx.x+1] = sample_2 * filter_taps[tap_offset+1];
+
+    __syncthreads();
+
+
+    //Simple parallel sum/reduction algorithm
+    //http://developer.download.nvidia.com/compute/cuda/1.1-Beta/x86_website/projects/reduction/doc/reduction.pdf
+    auto half_num_taps = blockDim.x;
+/*    for(uint32_t stride=half_num_taps; stride>0; stride>>=1) {
+        if (tap_offset < stride) {
+            filter_products[tap_offset] = filter_products[tap_offset] +
+                                            filter_products[tap_offset + stride];
+            filter_products[tap_offset + 1] = filter_products[tap_offset + 1] +
+                                            filter_products[tap_offset + 1 + stride];
+
+        }
+        __syncthreads();
+    }*/
+    for (unsigned int s=half_num_taps; s>32; s>>=1) {
+        if (tap_offset < s)
+            filter_products[tap_offset] += filter_products[tap_offset + s];
+            filter_products[tap_offset+1] += filter_products[tap_offset+1 + s];
+        __syncthreads();
+    }
+    if (tap_offset < 32){
+        filter_products[tap_offset] += filter_products[tap_offset + 32];
+        filter_products[tap_offset] += filter_products[tap_offset + 16];
+        filter_products[tap_offset] += filter_products[tap_offset + 8];
+        filter_products[tap_offset] += filter_products[tap_offset + 4];
+        filter_products[tap_offset] += filter_products[tap_offset + 2];
+        filter_products[tap_offset] += filter_products[tap_offset + 1];
+
+        filter_products[tap_offset + 1] += filter_products[tap_offset + 1 + 32];
+        filter_products[tap_offset + 1] += filter_products[tap_offset + 1 + 16];
+        filter_products[tap_offset + 1] += filter_products[tap_offset + 1 + 8];
+        filter_products[tap_offset + 1] += filter_products[tap_offset + 1 + 4];
+        filter_products[tap_offset + 1] += filter_products[tap_offset + 1 + 2];
+        filter_products[tap_offset + 1] += filter_products[tap_offset + 1 + 1];
+    }
+    if (threadIdx.x == 0) {
+        channel_offset = channel_num * num_original_samples/dm_rate;
+        auto total_channels = blockDim.y;
+        auto freq_offset = threadIdx.y * total_channels;
+        auto total_offset = freq_offset + channel_offset + dec_sample_num;
+        decimated_samples[total_offset] = filter_products[tap_offset];
+    }
 }
 
 __global__ void decimatev3(T_COMPLEX_F* original_samples,
@@ -134,13 +214,26 @@ __global__ void decimatev3(T_COMPLEX_F* original_samples,
     //Simple parallel sum/reduction algorithm
     //http://developer.download.nvidia.com/compute/cuda/1.1-Beta/x86_website/projects/reduction/doc/reduction.pdf
     auto num_taps = blockDim.x;
-    for(uint32_t stride=num_taps/2; stride>0; stride>>=1) {
+/*    for(uint32_t stride=num_taps/2; stride>0; stride>>=1) {
         if (tap_offset < stride) {
             filter_products[tap_offset] = filter_products[tap_offset] +
                                             filter_products[tap_offset + stride];
 
         }
         __syncthreads();
+    }*/
+    for (unsigned int s=num_taps/2; s>32; s>>=1) {
+        if (tap_offset < s)
+            filter_products[tap_offset] += filter_products[tap_offset + s];
+        __syncthreads();
+    }
+    if (tap_offset < 32){
+        filter_products[tap_offset] += filter_products[tap_offset + 32];
+        filter_products[tap_offset] += filter_products[tap_offset + 16];
+        filter_products[tap_offset] += filter_products[tap_offset + 8];
+        filter_products[tap_offset] += filter_products[tap_offset + 4];
+        filter_products[tap_offset] += filter_products[tap_offset + 2];
+        filter_products[tap_offset] += filter_products[tap_offset + 1];
     }
 
     if (threadIdx.x == 0) {
@@ -181,7 +274,7 @@ int main() {
     dim3 dimGrid(num_blocks_x,num_blocks_y,num_blocks_z);
 
     // Dedicate a thread for every filter tap
-    auto num_threads_x = NUM_FILTER_TAPS;
+    auto num_threads_x = NUM_FILTER_TAPS/2;
     auto num_threads_y = NUM_FREQUENCIES;
 
     dim3 dimBlock(num_threads_x,num_threads_y);
@@ -195,9 +288,9 @@ int main() {
     auto samples_p = thrust::raw_pointer_cast(samples_d.data());
     auto output_p = thrust::raw_pointer_cast(output_d.data());
     auto filter_p = thrust::raw_pointer_cast(filter_d.data());
-    auto shr_mem_taps = NUM_FILTER_TAPS * sizeof(T_COMPLEX_F);
+    auto shr_mem_taps = NUM_FILTER_TAPS * sizeof(T_COMPLEX_F) * NUM_FREQUENCIES;
 
-    decimatev1<<<dimGrid,dimBlock,shr_mem_taps>>>(samples_p, output_p, filter_p,
+    decimatev2<<<dimGrid,dimBlock,shr_mem_taps>>>(samples_p, output_p, filter_p,
                 DECIMATION_RATE, NUM_SAMPLES);
     throw_on_cuda_error(cudaPeekAtLastError(), __FILE__,__LINE__);
     cudaDeviceSynchronize();
