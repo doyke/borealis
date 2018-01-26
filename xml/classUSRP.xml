@@ -1,0 +1,765 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.11">
+  <compounddef id="classUSRP" kind="class" language="C++" prot="public">
+    <compoundname>USRP</compoundname>
+    <includes refid="usrp_8hpp" local="no">usrp.hpp</includes>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classUSRP_1a9f2b45521252847088387b2d9d25e2a8" prot="private" static="no" mutable="no">
+        <type>uhd::usrp::multi_usrp::sptr</type>
+        <definition>uhd::usrp::multi_usrp::sptr USRP::usrp_</definition>
+        <argsstring></argsstring>
+        <name>usrp_</name>
+        <briefdescription>
+<para>A shared pointer to a new multi-USRP device. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="51" column="1" bodyfile="usrp_drivers/n200/usrp.hpp" bodystart="51" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classUSRP_1a7bf6abacd43d27bc0fb2a062724d1f4b" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string USRP::gpio_bank_</definition>
+        <argsstring></argsstring>
+        <name>gpio_bank_</name>
+        <briefdescription>
+<para>A string representing what GPIO bank to use on the USRPs. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="54" column="1" bodyfile="usrp_drivers/n200/usrp.hpp" bodystart="54" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classUSRP_1a926e5eb70dd7ae076c71aa2002ac3c24" prot="private" static="no" mutable="no">
+        <type>uint32_t</type>
+        <definition>uint32_t USRP::mboard_</definition>
+        <argsstring></argsstring>
+        <name>mboard_</name>
+        <briefdescription>
+<para>The motherboard for which to use GPIOs for high speed I/O. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="57" column="1" bodyfile="usrp_drivers/n200/usrp.hpp" bodystart="57" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classUSRP_1a18d93a0883af7a85bf27d73e9c68be8f" prot="private" static="no" mutable="no">
+        <type>uint32_t</type>
+        <definition>uint32_t USRP::scope_sync_mask_</definition>
+        <argsstring></argsstring>
+        <name>scope_sync_mask_</name>
+        <briefdescription>
+<para>The bitmask to use for the scope sync GPIO. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="60" column="1" bodyfile="usrp_drivers/n200/usrp.hpp" bodystart="60" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classUSRP_1a5d56bd57374b9872bc2f5065dfc5d299" prot="private" static="no" mutable="no">
+        <type>uint32_t</type>
+        <definition>uint32_t USRP::atten_mask_</definition>
+        <argsstring></argsstring>
+        <name>atten_mask_</name>
+        <briefdescription>
+<para>The bitmask to use for the attenuator GPIO. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="63" column="1" bodyfile="usrp_drivers/n200/usrp.hpp" bodystart="63" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classUSRP_1a9d135074e56d8d50e2ed0c6dff0f5ef7" prot="private" static="no" mutable="no">
+        <type>uint32_t</type>
+        <definition>uint32_t USRP::tr_mask_</definition>
+        <argsstring></argsstring>
+        <name>tr_mask_</name>
+        <briefdescription>
+<para>The bitmask to use for the TR GPIO. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="66" column="1" bodyfile="usrp_drivers/n200/usrp.hpp" bodystart="66" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classUSRP_1ae0816425ed6a064d7f94ffd14206741e" prot="public" static="no" const="no" explicit="yes" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>USRP::USRP</definition>
+        <argsstring>(const DriverOptions &amp;driver_options)</argsstring>
+        <name>USRP</name>
+        <param>
+          <type>const DriverOptions &amp;</type>
+          <declname>driver_options</declname>
+        </param>
+        <briefdescription>
+<para>Creates the multiUSRP abstraction with the options from the config file. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">driver_options</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The driver options parsed from config </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="22" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="23" bodyend="44"/>
+      </memberdef>
+      <memberdef kind="function" id="classUSRP_1a6c0cf4ec10d63df0feb833ca7193f9c5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void USRP::set_usrp_clock_source</definition>
+        <argsstring>(std::string source)</argsstring>
+        <name>set_usrp_clock_source</name>
+        <param>
+          <type>std::string</type>
+          <declname>source</declname>
+        </param>
+        <briefdescription>
+<para>Sets the <ref refid="classUSRP" kindref="compound">USRP</ref> clock source. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">source</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A string for a valid <ref refid="classUSRP" kindref="compound">USRP</ref> clock source. </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="23" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="54" bodyend="57"/>
+      </memberdef>
+      <memberdef kind="function" id="classUSRP_1adc7b4350ee14217a1cc0bce7b4083672" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void USRP::set_tx_subdev</definition>
+        <argsstring>(std::string tx_subdev)</argsstring>
+        <name>set_tx_subdev</name>
+        <param>
+          <type>std::string</type>
+          <declname>tx_subdev</declname>
+        </param>
+        <briefdescription>
+<para>Sets the <ref refid="classUSRP" kindref="compound">USRP</ref> transmit subdev specification. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">tx_subdev</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A string for a valid transmit subdev. </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="24" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="64" bodyend="67"/>
+      </memberdef>
+      <memberdef kind="function" id="classUSRP_1ad7a86c9090ae50a26fe0ead782f680b1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>double</type>
+        <definition>double USRP::set_tx_rate</definition>
+        <argsstring>(double tx_rate, std::vector&lt; size_t &gt; chs)</argsstring>
+        <name>set_tx_rate</name>
+        <param>
+          <type>double</type>
+          <declname>tx_rate</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; size_t &gt;</type>
+          <declname>chs</declname>
+        </param>
+        <briefdescription>
+<para>Sets the transmit sample rate. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">tx_rate</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The transmit sample rate in Sps.</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Actual set tx rate. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="25" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="76" bodyend="95"/>
+      </memberdef>
+      <memberdef kind="function" id="classUSRP_1a2330eadde3feb6577b25f34372613084" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>double</type>
+        <definition>double USRP::get_tx_rate</definition>
+        <argsstring>(uint32_t channel=0)</argsstring>
+        <name>get_tx_rate</name>
+        <param>
+          <type>uint32_t</type>
+          <declname>channel</declname>
+          <defval>0</defval>
+        </param>
+        <briefdescription>
+<para>Gets the <ref refid="classUSRP" kindref="compound">USRP</ref> transmit sample rate. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>The transmit sample rate in Sps. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="26" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="102" bodyend="105"/>
+      </memberdef>
+      <memberdef kind="function" id="classUSRP_1af0656e9048b499789d610b8a1fa4fd38" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>double</type>
+        <definition>double USRP::set_tx_center_freq</definition>
+        <argsstring>(double freq, std::vector&lt; size_t &gt; chs)</argsstring>
+        <name>set_tx_center_freq</name>
+        <param>
+          <type>double</type>
+          <declname>freq</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; size_t &gt;</type>
+          <declname>chs</declname>
+        </param>
+        <briefdescription>
+<para>Sets the transmit center frequency. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">freq</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The frequency in Hz. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">chs</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A vector of which <ref refid="classUSRP" kindref="compound">USRP</ref> channels to set a center frequency.</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>The actual set tx center frequency for the USRPs</para></simplesect>
+The <ref refid="classUSRP" kindref="compound">USRP</ref> uses a numbered channel mapping system to identify which data streams come from which <ref refid="classUSRP" kindref="compound">USRP</ref> and its daughterboard frontends. With the daughtboard frontends connected to the transmitters, controlling what <ref refid="classUSRP" kindref="compound">USRP</ref> channels are selected will control what antennas are used and what order they are in. </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="27" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="120" bodyend="145"/>
+      </memberdef>
+      <memberdef kind="function" id="classUSRP_1a185f6c94e133d06540956f9f76fd8552" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void USRP::set_main_rx_subdev</definition>
+        <argsstring>(std::string main_subdev)</argsstring>
+        <name>set_main_rx_subdev</name>
+        <param>
+          <type>std::string</type>
+          <declname>main_subdev</declname>
+        </param>
+        <briefdescription>
+<para>Sets the receive subdev for the main array antennas. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">main_subdev</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A string for a valid receive subdev.</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+Will set all boxes to receive from first <ref refid="classUSRP" kindref="compound">USRP</ref> channel of all mboards for main array. </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="28" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="155" bodyend="158"/>
+      </memberdef>
+      <memberdef kind="function" id="classUSRP_1a0c4796b6b551a7dacb5a47250b1ead87" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void USRP::set_interferometer_rx_subdev</definition>
+        <argsstring>(std::string interferometer_subdev, uint32_t interferometer_antenna_count)</argsstring>
+        <name>set_interferometer_rx_subdev</name>
+        <param>
+          <type>std::string</type>
+          <declname>interferometer_subdev</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>interferometer_antenna_count</declname>
+        </param>
+        <briefdescription>
+<para>Sets the interferometer receive subdev. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">interferometer_subdev</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A string for a valid receive subdev. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">interferometer_antenna_count</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The interferometer antenna count.</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+Override the subdev spec of the first mboards to receive on a second channel for the interferometer. </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="29" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="171" bodyend="179"/>
+      </memberdef>
+      <memberdef kind="function" id="classUSRP_1afa1efa80fcb31a8422ce118189d0e6e3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>double</type>
+        <definition>double USRP::set_rx_rate</definition>
+        <argsstring>(double rx_rate, std::vector&lt; size_t &gt; rx_chs)</argsstring>
+        <name>set_rx_rate</name>
+        <param>
+          <type>double</type>
+          <declname>rx_rate</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; size_t &gt;</type>
+          <declname>rx_chs</declname>
+        </param>
+        <briefdescription>
+<para>Creates the order of <ref refid="classUSRP" kindref="compound">USRP</ref> receiver channels. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">main_antenna_count</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The main antenna count. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">interferometer_antenna_count</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The interferometer antenna count.</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>A vector with the <ref refid="classUSRP" kindref="compound">USRP</ref> channel ordering.</para></simplesect>
+The <ref refid="classUSRP" kindref="compound">USRP</ref> default channel mapping will cause the main antenna and interferometer antenna data to be interleaved buffer by buffer. When setting up the receive streamer from the <ref refid="classUSRP" kindref="compound">USRP</ref>, it is possible to reorder the host side data buffers. This algorithm reorders the channels so that the main array buffers are in order, followed by the interferometers buffers. This ordering is easiest to work with and is what most people would assume the data layout looks like. Gets the receive channels.</para><para><simplesect kind="return"><para>A vector of the receive channel ordering. Sets the receive sample rate.</para></simplesect>
+<parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">rx_rate</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The receive rate in Sps. </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="31" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="240" bodyend="255"/>
+      </memberdef>
+      <memberdef kind="function" id="classUSRP_1a20942898561a12aa4c14de69cf5cc341" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>double</type>
+        <definition>double USRP::set_rx_center_freq</definition>
+        <argsstring>(double freq, std::vector&lt; size_t &gt; chs)</argsstring>
+        <name>set_rx_center_freq</name>
+        <param>
+          <type>double</type>
+          <declname>freq</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; size_t &gt;</type>
+          <declname>chs</declname>
+        </param>
+        <briefdescription>
+<para>Sets the receive center frequency. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">freq</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The frequency in Hz. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">chs</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A vector of which <ref refid="classUSRP" kindref="compound">USRP</ref> channels to set a center frequency.</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>The actual center frequency that the USRPs are tuned to.</para></simplesect>
+The <ref refid="classUSRP" kindref="compound">USRP</ref> uses a numbered channel mapping system to identify which data streams come from which <ref refid="classUSRP" kindref="compound">USRP</ref> and its daughterboard frontends. With the daughtboard frontends connected to the transmitters, controlling what <ref refid="classUSRP" kindref="compound">USRP</ref> channels are selected will control what antennas are used and what order they are in. To simplify data processing, all antenna mapped channels are used. </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="32" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="271" bodyend="286"/>
+      </memberdef>
+      <memberdef kind="function" id="classUSRP_1a36831b76a4b0085eb7ce7a6d68d844e2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void USRP::set_time_source</definition>
+        <argsstring>(std::string source)</argsstring>
+        <name>set_time_source</name>
+        <param>
+          <type>std::string</type>
+          <declname>source</declname>
+        </param>
+        <briefdescription>
+<para>Sets the <ref refid="classUSRP" kindref="compound">USRP</ref> time source. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">source</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A string with the time source the <ref refid="classUSRP" kindref="compound">USRP</ref> will use. </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="33" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="293" bodyend="303"/>
+      </memberdef>
+      <memberdef kind="function" id="classUSRP_1a06dc19d3b5275b043dac6d9578311287" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void USRP::check_ref_locked</definition>
+        <argsstring>()</argsstring>
+        <name>check_ref_locked</name>
+        <briefdescription>
+<para>Makes a quick check that each <ref refid="classUSRP" kindref="compound">USRP</ref> is locked to a reference frequency. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="34" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="308" bodyend="327"/>
+      </memberdef>
+      <memberdef kind="function" id="classUSRP_1abf842a3e9a41b6bf509d195fef659d05" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void USRP::set_scope_sync</definition>
+        <argsstring>(uhd::time_spec_t scope_high)</argsstring>
+        <name>set_scope_sync</name>
+        <param>
+          <type>uhd::time_spec_t</type>
+          <declname>scope_high</declname>
+        </param>
+        <briefdescription>
+<para>Sets the scope sync GPIO to high. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">scope_high</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The timespec for when in the future to set the scope sync pin. </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="35" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="334" bodyend="338"/>
+      </memberdef>
+      <memberdef kind="function" id="classUSRP_1af892eb152a034b58353b16d2bbb587bf" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void USRP::set_atten</definition>
+        <argsstring>(uhd::time_spec_t atten_high)</argsstring>
+        <name>set_atten</name>
+        <param>
+          <type>uhd::time_spec_t</type>
+          <declname>atten_high</declname>
+        </param>
+        <briefdescription>
+<para>Sets the attenuator GPIO to high. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">atten_high</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The timespec for when in the future to set the attenuator pin. </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="36" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="345" bodyend="349"/>
+      </memberdef>
+      <memberdef kind="function" id="classUSRP_1a2abaced689292f18466e984719c07790" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void USRP::set_tr</definition>
+        <argsstring>(uhd::time_spec_t tr_high)</argsstring>
+        <name>set_tr</name>
+        <param>
+          <type>uhd::time_spec_t</type>
+          <declname>tr_high</declname>
+        </param>
+        <briefdescription>
+<para>Sets the t/r GPIO to high. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">tr_high</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The timespec for when in the future to set the TR pin. </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="37" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="356" bodyend="360"/>
+      </memberdef>
+      <memberdef kind="function" id="classUSRP_1a8df601f93bd92e3b3fb7acf52988ed3f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void USRP::clear_scope_sync</definition>
+        <argsstring>(uhd::time_spec_t scope_low)</argsstring>
+        <name>clear_scope_sync</name>
+        <param>
+          <type>uhd::time_spec_t</type>
+          <declname>scope_low</declname>
+        </param>
+        <briefdescription>
+<para>Clears the scope sync GPIO to low. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">scope_low</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The timespec for when in the future to clear the scope sync pin. </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="38" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="367" bodyend="371"/>
+      </memberdef>
+      <memberdef kind="function" id="classUSRP_1a12d3e326cd03e0ddfea6edc29aa1b80d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void USRP::clear_atten</definition>
+        <argsstring>(uhd::time_spec_t atten_low)</argsstring>
+        <name>clear_atten</name>
+        <param>
+          <type>uhd::time_spec_t</type>
+          <declname>atten_low</declname>
+        </param>
+        <briefdescription>
+<para>Clears the attenuator GPIO to low. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">atten_low</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The timespec for when in the future to clear the attenuator pin. </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="39" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="378" bodyend="382"/>
+      </memberdef>
+      <memberdef kind="function" id="classUSRP_1a61033961122a1afdfa9b6a50bdfae1f1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void USRP::clear_tr</definition>
+        <argsstring>(uhd::time_spec_t tr_low)</argsstring>
+        <name>clear_tr</name>
+        <param>
+          <type>uhd::time_spec_t</type>
+          <declname>tr_low</declname>
+        </param>
+        <briefdescription>
+<para>Clears the t/r GPIO to low. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">tr_low</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The timespec for when in the future to clear the TR pin. </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="40" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="389" bodyend="393"/>
+      </memberdef>
+      <memberdef kind="function" id="classUSRP_1ae8025671f588c43b5768fb4209435896" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void USRP::clear_command_times</definition>
+        <argsstring>()</argsstring>
+        <name>clear_command_times</name>
+        <briefdescription>
+<para>Clears any timed <ref refid="classUSRP" kindref="compound">USRP</ref> commands. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="41" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="398" bodyend="401"/>
+      </memberdef>
+      <memberdef kind="function" id="classUSRP_1a42d2fdd63623ec898a77ffecfeb91377" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>uhd::time_spec_t</type>
+        <definition>uhd::time_spec_t USRP::get_current_usrp_time</definition>
+        <argsstring>()</argsstring>
+        <name>get_current_usrp_time</name>
+        <briefdescription>
+<para>Gets the current <ref refid="classUSRP" kindref="compound">USRP</ref> time. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>The current <ref refid="classUSRP" kindref="compound">USRP</ref> time. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="42" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="431" bodyend="434"/>
+      </memberdef>
+      <memberdef kind="function" id="classUSRP_1a0466c9207c6a06169adfdfbbc91b5d6e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>uhd::rx_streamer::sptr</type>
+        <definition>uhd::rx_streamer::sptr USRP::get_usrp_rx_stream</definition>
+        <argsstring>(uhd::stream_args_t stream_args)</argsstring>
+        <name>get_usrp_rx_stream</name>
+        <param>
+          <type>uhd::stream_args_t</type>
+          <declname>stream_args</declname>
+        </param>
+        <briefdescription>
+<para>Gets a pointer to the <ref refid="classUSRP" kindref="compound">USRP</ref> rx stream. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">stream_args</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The arguments for the type of stream. Described in UHD docs.</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>The <ref refid="classUSRP" kindref="compound">USRP</ref> rx stream. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="43" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="443" bodyend="446"/>
+      </memberdef>
+      <memberdef kind="function" id="classUSRP_1a38d58a62df34bfe1204297b13269265d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>uhd::tx_streamer::sptr</type>
+        <definition>uhd::tx_streamer::sptr USRP::get_usrp_tx_stream</definition>
+        <argsstring>(uhd::stream_args_t stream_args)</argsstring>
+        <name>get_usrp_tx_stream</name>
+        <param>
+          <type>uhd::stream_args_t</type>
+          <declname>stream_args</declname>
+        </param>
+        <briefdescription>
+<para>Gets a pointer to the <ref refid="classUSRP" kindref="compound">USRP</ref> tx stream. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">stream_args</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The arguments for the type of stream. Described in UHD docs.</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>The <ref refid="classUSRP" kindref="compound">USRP</ref> tx stream. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="44" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="455" bodyend="458"/>
+      </memberdef>
+      <memberdef kind="function" id="classUSRP_1ad63412ef4f989f41fd042ba3398857fd" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>uhd::usrp::multi_usrp::sptr</type>
+        <definition>uhd::usrp::multi_usrp::sptr USRP::get_usrp</definition>
+        <argsstring>()</argsstring>
+        <name>get_usrp</name>
+        <briefdescription>
+<para>Gets the usrp. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>The multi-USRP shared pointer. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="46" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="467" bodyend="470"/>
+      </memberdef>
+      <memberdef kind="function" id="classUSRP_1a35b40fc53946a2d9c7c42c4546d195a3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string USRP::to_string</definition>
+        <argsstring>(std::vector&lt; size_t &gt; tx_chs, std::vector&lt; size_t &gt; rx_chs)</argsstring>
+        <name>to_string</name>
+        <param>
+          <type>std::vector&lt; size_t &gt;</type>
+          <declname>tx_chs</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; size_t &gt;</type>
+          <declname>rx_chs</declname>
+        </param>
+        <briefdescription>
+<para>Returns a string representation of the <ref refid="classUSRP" kindref="compound">USRP</ref> parameters. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">tx_chs</parametername>
+</parameternamelist>
+<parameterdescription>
+<para><ref refid="classUSRP" kindref="compound">USRP</ref> TX channels for which to generate info for. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">rx_chs</parametername>
+</parameternamelist>
+<parameterdescription>
+<para><ref refid="classUSRP" kindref="compound">USRP</ref> RX channels for which to generate info for.</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>String representation of the <ref refid="classUSRP" kindref="compound">USRP</ref> parameters. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="47" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="481" bodyend="503"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-func">
+      <memberdef kind="function" id="classUSRP_1a20669674e19e7c7ab0771ce044a79438" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void USRP::set_atr_gpios</definition>
+        <argsstring>()</argsstring>
+        <name>set_atr_gpios</name>
+        <briefdescription>
+<para>This is the reordered <ref refid="classUSRP" kindref="compound">USRP</ref> receive channels. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="73" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="403" bodyend="424"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>Contains an abstract wrapper for the <ref refid="classUSRP" kindref="compound">USRP</ref> object. </para>    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="usrp_drivers/n200/usrp.hpp" line="20" column="1" bodyfile="usrp_drivers/n200/usrp.hpp" bodystart="20" bodyend="75"/>
+    <listofallmembers>
+      <member refid="classUSRP_1a5d56bd57374b9872bc2f5065dfc5d299" prot="private" virt="non-virtual"><scope>USRP</scope><name>atten_mask_</name></member>
+      <member refid="classUSRP_1a06dc19d3b5275b043dac6d9578311287" prot="public" virt="non-virtual"><scope>USRP</scope><name>check_ref_locked</name></member>
+      <member refid="classUSRP_1a12d3e326cd03e0ddfea6edc29aa1b80d" prot="public" virt="non-virtual"><scope>USRP</scope><name>clear_atten</name></member>
+      <member refid="classUSRP_1ae8025671f588c43b5768fb4209435896" prot="public" virt="non-virtual"><scope>USRP</scope><name>clear_command_times</name></member>
+      <member refid="classUSRP_1a8df601f93bd92e3b3fb7acf52988ed3f" prot="public" virt="non-virtual"><scope>USRP</scope><name>clear_scope_sync</name></member>
+      <member refid="classUSRP_1a61033961122a1afdfa9b6a50bdfae1f1" prot="public" virt="non-virtual"><scope>USRP</scope><name>clear_tr</name></member>
+      <member refid="classUSRP_1a42d2fdd63623ec898a77ffecfeb91377" prot="public" virt="non-virtual"><scope>USRP</scope><name>get_current_usrp_time</name></member>
+      <member refid="classUSRP_1a2330eadde3feb6577b25f34372613084" prot="public" virt="non-virtual"><scope>USRP</scope><name>get_tx_rate</name></member>
+      <member refid="classUSRP_1ad63412ef4f989f41fd042ba3398857fd" prot="public" virt="non-virtual"><scope>USRP</scope><name>get_usrp</name></member>
+      <member refid="classUSRP_1a0466c9207c6a06169adfdfbbc91b5d6e" prot="public" virt="non-virtual"><scope>USRP</scope><name>get_usrp_rx_stream</name></member>
+      <member refid="classUSRP_1a38d58a62df34bfe1204297b13269265d" prot="public" virt="non-virtual"><scope>USRP</scope><name>get_usrp_tx_stream</name></member>
+      <member refid="classUSRP_1a7bf6abacd43d27bc0fb2a062724d1f4b" prot="private" virt="non-virtual"><scope>USRP</scope><name>gpio_bank_</name></member>
+      <member refid="classUSRP_1a926e5eb70dd7ae076c71aa2002ac3c24" prot="private" virt="non-virtual"><scope>USRP</scope><name>mboard_</name></member>
+      <member refid="classUSRP_1a18d93a0883af7a85bf27d73e9c68be8f" prot="private" virt="non-virtual"><scope>USRP</scope><name>scope_sync_mask_</name></member>
+      <member refid="classUSRP_1a20669674e19e7c7ab0771ce044a79438" prot="private" virt="non-virtual"><scope>USRP</scope><name>set_atr_gpios</name></member>
+      <member refid="classUSRP_1af892eb152a034b58353b16d2bbb587bf" prot="public" virt="non-virtual"><scope>USRP</scope><name>set_atten</name></member>
+      <member refid="classUSRP_1a0c4796b6b551a7dacb5a47250b1ead87" prot="public" virt="non-virtual"><scope>USRP</scope><name>set_interferometer_rx_subdev</name></member>
+      <member refid="classUSRP_1a185f6c94e133d06540956f9f76fd8552" prot="public" virt="non-virtual"><scope>USRP</scope><name>set_main_rx_subdev</name></member>
+      <member refid="classUSRP_1a20942898561a12aa4c14de69cf5cc341" prot="public" virt="non-virtual"><scope>USRP</scope><name>set_rx_center_freq</name></member>
+      <member refid="classUSRP_1afa1efa80fcb31a8422ce118189d0e6e3" prot="public" virt="non-virtual"><scope>USRP</scope><name>set_rx_rate</name></member>
+      <member refid="classUSRP_1abf842a3e9a41b6bf509d195fef659d05" prot="public" virt="non-virtual"><scope>USRP</scope><name>set_scope_sync</name></member>
+      <member refid="classUSRP_1a36831b76a4b0085eb7ce7a6d68d844e2" prot="public" virt="non-virtual"><scope>USRP</scope><name>set_time_source</name></member>
+      <member refid="classUSRP_1a2abaced689292f18466e984719c07790" prot="public" virt="non-virtual"><scope>USRP</scope><name>set_tr</name></member>
+      <member refid="classUSRP_1af0656e9048b499789d610b8a1fa4fd38" prot="public" virt="non-virtual"><scope>USRP</scope><name>set_tx_center_freq</name></member>
+      <member refid="classUSRP_1ad7a86c9090ae50a26fe0ead782f680b1" prot="public" virt="non-virtual"><scope>USRP</scope><name>set_tx_rate</name></member>
+      <member refid="classUSRP_1adc7b4350ee14217a1cc0bce7b4083672" prot="public" virt="non-virtual"><scope>USRP</scope><name>set_tx_subdev</name></member>
+      <member refid="classUSRP_1a6c0cf4ec10d63df0feb833ca7193f9c5" prot="public" virt="non-virtual"><scope>USRP</scope><name>set_usrp_clock_source</name></member>
+      <member refid="classUSRP_1a35b40fc53946a2d9c7c42c4546d195a3" prot="public" virt="non-virtual"><scope>USRP</scope><name>to_string</name></member>
+      <member refid="classUSRP_1a9d135074e56d8d50e2ed0c6dff0f5ef7" prot="private" virt="non-virtual"><scope>USRP</scope><name>tr_mask_</name></member>
+      <member refid="classUSRP_1ae0816425ed6a064d7f94ffd14206741e" prot="public" virt="non-virtual"><scope>USRP</scope><name>USRP</name></member>
+      <member refid="classUSRP_1a9f2b45521252847088387b2d9d25e2a8" prot="private" virt="non-virtual"><scope>USRP</scope><name>usrp_</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

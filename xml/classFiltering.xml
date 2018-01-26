@@ -1,0 +1,483 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.11">
+  <compounddef id="classFiltering" kind="class" language="C++" prot="public">
+    <compoundname>Filtering</compoundname>
+    <includes refid="filtering_8hpp" local="no">filtering.hpp</includes>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classFiltering_1a8dffa10829d82a18a4f0c6f87b78c9f3" prot="private" static="no" mutable="no">
+        <type>uint32_t</type>
+        <definition>uint32_t Filtering::num_first_stage_taps</definition>
+        <argsstring></argsstring>
+        <name>num_first_stage_taps</name>
+        <briefdescription>
+<para>Number of taps in the first stage filter. Includes possible zero padding. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/filtering.hpp" line="38" column="1" bodyfile="rx_signal_processing/filtering.hpp" bodystart="38" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFiltering_1adc6c7ac7bfb3408736558ecbb7eebbd7" prot="private" static="no" mutable="no">
+        <type>uint32_t</type>
+        <definition>uint32_t Filtering::num_second_stage_taps</definition>
+        <argsstring></argsstring>
+        <name>num_second_stage_taps</name>
+        <briefdescription>
+<para>Number of taps in the second stage filter. Includes possible zero padding. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/filtering.hpp" line="41" column="1" bodyfile="rx_signal_processing/filtering.hpp" bodystart="41" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFiltering_1a93136930b30da873eff2d0636a6e73ea" prot="private" static="no" mutable="no">
+        <type>uint32_t</type>
+        <definition>uint32_t Filtering::num_third_stage_taps</definition>
+        <argsstring></argsstring>
+        <name>num_third_stage_taps</name>
+        <briefdescription>
+<para>Number of taps in the third stage filter. Includes possible zero padding. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/filtering.hpp" line="44" column="1" bodyfile="rx_signal_processing/filtering.hpp" bodystart="44" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFiltering_1a8cb4e3807fec66049bade680cca02c24" prot="private" static="no" mutable="no">
+        <type>std::vector&lt; std::complex&lt; float &gt; &gt;</type>
+        <definition>std::vector&lt;std::complex&lt;float&gt; &gt; Filtering::first_stage_lowpass_taps</definition>
+        <argsstring></argsstring>
+        <name>first_stage_lowpass_taps</name>
+        <briefdescription>
+<para>A vector of taps for the first stage lowpass filter. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/filtering.hpp" line="47" column="1" bodyfile="rx_signal_processing/filtering.hpp" bodystart="47" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFiltering_1a34ce9f8785a9b7e5859e365741f4ae9d" prot="private" static="no" mutable="no">
+        <type>std::vector&lt; std::complex&lt; float &gt; &gt;</type>
+        <definition>std::vector&lt;std::complex&lt;float&gt; &gt; Filtering::second_stage_lowpass_taps</definition>
+        <argsstring></argsstring>
+        <name>second_stage_lowpass_taps</name>
+        <briefdescription>
+<para>A vector of taps for the second stage lowpass filter. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/filtering.hpp" line="50" column="1" bodyfile="rx_signal_processing/filtering.hpp" bodystart="50" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFiltering_1a6bd3008508e7656b7a3a90199d5a2dfc" prot="private" static="no" mutable="no">
+        <type>std::vector&lt; std::complex&lt; float &gt; &gt;</type>
+        <definition>std::vector&lt;std::complex&lt;float&gt; &gt; Filtering::third_stage_lowpass_taps</definition>
+        <argsstring></argsstring>
+        <name>third_stage_lowpass_taps</name>
+        <briefdescription>
+<para>A vector of taps for the third stage lowpass filter. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/filtering.hpp" line="53" column="1" bodyfile="rx_signal_processing/filtering.hpp" bodystart="53" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classFiltering_1a0f45d0984f456000f33f630a1ca6944f" prot="private" static="no" mutable="no">
+        <type>std::vector&lt; std::complex&lt; float &gt; &gt;</type>
+        <definition>std::vector&lt;std::complex&lt;float&gt; &gt; Filtering::first_stage_bandpass_taps_h</definition>
+        <argsstring></argsstring>
+        <name>first_stage_bandpass_taps_h</name>
+        <briefdescription>
+<para>A host side vector that holds the taps for all first stage bandpass filters. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/filtering.hpp" line="56" column="1" bodyfile="rx_signal_processing/filtering.hpp" bodystart="56" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classFiltering_1ae2aadb28bdfcddc4e7ebbe39003c5ce7" prot="public" static="no" const="no" explicit="yes" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Filtering::Filtering</definition>
+        <argsstring>(double initial_rx_sample_rate, const SignalProcessingOptions &amp;sig_options)</argsstring>
+        <name>Filtering</name>
+        <param>
+          <type>double</type>
+          <declname>initial_rx_sample_rate</declname>
+        </param>
+        <param>
+          <type>const SignalProcessingOptions &amp;</type>
+          <declname>sig_options</declname>
+        </param>
+        <briefdescription>
+<para>The constructor finds the number of filter taps for each stage and then a lowpass filter for each stage. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">initial_rx_sample_rate</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The <ref refid="classUSRP" kindref="compound">USRP</ref> RX sampling rate in Hz. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">sig_options</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A reference to the signal processing config options. </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/filtering.hpp" line="23" column="1" bodyfile="rx_signal_processing/filtering.cpp" bodystart="28" bodyend="48"/>
+      </memberdef>
+      <memberdef kind="function" id="classFiltering_1a98faeb33c65cf49ec33598914ae5d909" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Filtering::save_filter_to_file</definition>
+        <argsstring>(const std::vector&lt; std::complex&lt; float &gt;&gt; &amp;filter_taps, std::string name)</argsstring>
+        <name>save_filter_to_file</name>
+        <param>
+          <type>const std::vector&lt; std::complex&lt; float &gt;&gt; &amp;</type>
+          <declname>filter_taps</declname>
+        </param>
+        <param>
+          <type>std::string</type>
+          <declname>name</declname>
+        </param>
+        <briefdescription>
+<para>Writes out a set of filter taps to file in case they need to be tested. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">filter_taps</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A reference to a vector of filter taps. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A output file name. </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/filtering.hpp" line="24" column="1" bodyfile="rx_signal_processing/filtering.cpp" bodystart="202" bodyend="220"/>
+      </memberdef>
+      <memberdef kind="function" id="classFiltering_1ae17d34b2bd228ee469d8fd51650a63a6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Filtering::mix_first_stage_to_bandpass</definition>
+        <argsstring>(const std::vector&lt; double &gt; &amp;rx_freqs, double initial_rx_rate)</argsstring>
+        <name>mix_first_stage_to_bandpass</name>
+        <param>
+          <type>const std::vector&lt; double &gt; &amp;</type>
+          <declname>rx_freqs</declname>
+        </param>
+        <param>
+          <type>double</type>
+          <declname>initial_rx_rate</declname>
+          <defname>initial_rx_sample_rate</defname>
+        </param>
+        <briefdescription>
+<para>Mixes the first stage lowpass filter to bandpass filters for each RX frequency. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">rx_freqs</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>rx_freqs A reference to a vector of RX frequencies in Hz. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">initial_rx_sample_rate</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>initial_rx_sample_rate The <ref refid="classUSRP" kindref="compound">USRP</ref> RX sampling rate in Hz.</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+Creates a flatbuffer with a bandpass filter for each RX frequency to be used in decimation. </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/filtering.hpp" line="26" column="1" bodyfile="rx_signal_processing/filtering.cpp" bodystart="178" bodyend="194"/>
+      </memberdef>
+      <memberdef kind="function" id="classFiltering_1ad78a4f7feaa83fbd4bb8b50d156d8979" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>uint32_t</type>
+        <definition>uint32_t Filtering::get_num_first_stage_taps</definition>
+        <argsstring>()</argsstring>
+        <name>get_num_first_stage_taps</name>
+        <briefdescription>
+<para>Gets the number of first stage taps. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>The number of first stage taps. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/filtering.hpp" line="28" column="1" bodyfile="rx_signal_processing/filtering.cpp" bodystart="228" bodyend="230"/>
+      </memberdef>
+      <memberdef kind="function" id="classFiltering_1acd9b5586b3c604bd09078307699962ce" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>uint32_t</type>
+        <definition>uint32_t Filtering::get_num_second_stage_taps</definition>
+        <argsstring>()</argsstring>
+        <name>get_num_second_stage_taps</name>
+        <briefdescription>
+<para>Gets the number of second stage taps. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>The number of second stage taps. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/filtering.hpp" line="29" column="1" bodyfile="rx_signal_processing/filtering.cpp" bodystart="237" bodyend="239"/>
+      </memberdef>
+      <memberdef kind="function" id="classFiltering_1a5bb6d62178c936f4d4f8db4f34356eab" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>uint32_t</type>
+        <definition>uint32_t Filtering::get_num_third_stage_taps</definition>
+        <argsstring>()</argsstring>
+        <name>get_num_third_stage_taps</name>
+        <briefdescription>
+<para>Gets the number of third stage taps. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>The number of third stage taps. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/filtering.hpp" line="30" column="1" bodyfile="rx_signal_processing/filtering.cpp" bodystart="246" bodyend="248"/>
+      </memberdef>
+      <memberdef kind="function" id="classFiltering_1a4853cb50881c4581efe7b662df7fdeb4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::vector&lt; std::complex&lt; float &gt; &gt;</type>
+        <definition>std::vector&lt; std::complex&lt; float &gt; &gt; Filtering::get_first_stage_lowpass_taps</definition>
+        <argsstring>()</argsstring>
+        <name>get_first_stage_lowpass_taps</name>
+        <briefdescription>
+<para>Gets the vector of the first stage lowpass filter taps. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>The first stage lowpass taps. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/filtering.hpp" line="31" column="1" bodyfile="rx_signal_processing/filtering.cpp" bodystart="255" bodyend="257"/>
+      </memberdef>
+      <memberdef kind="function" id="classFiltering_1a4acbcae0cf7cff5920feaf4b93263dd0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::vector&lt; std::complex&lt; float &gt; &gt;</type>
+        <definition>std::vector&lt; std::complex&lt; float &gt; &gt; Filtering::get_second_stage_lowpass_taps</definition>
+        <argsstring>()</argsstring>
+        <name>get_second_stage_lowpass_taps</name>
+        <briefdescription>
+<para>Gets the vector of the second stage lowpass filter taps. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>The second stage lowpass taps. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/filtering.hpp" line="32" column="1" bodyfile="rx_signal_processing/filtering.cpp" bodystart="264" bodyend="266"/>
+      </memberdef>
+      <memberdef kind="function" id="classFiltering_1abda8f6f06ca68dacba692a70cd48b7dc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::vector&lt; std::complex&lt; float &gt; &gt;</type>
+        <definition>std::vector&lt; std::complex&lt; float &gt; &gt; Filtering::get_third_stage_lowpass_taps</definition>
+        <argsstring>()</argsstring>
+        <name>get_third_stage_lowpass_taps</name>
+        <briefdescription>
+<para>Gets the vector of the third stage lowpass taps. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>The third stage lowpass taps. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/filtering.hpp" line="33" column="1" bodyfile="rx_signal_processing/filtering.cpp" bodystart="273" bodyend="275"/>
+      </memberdef>
+      <memberdef kind="function" id="classFiltering_1a0776b03937c5ec302de6be19be86c5e0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::vector&lt; std::complex&lt; float &gt; &gt;</type>
+        <definition>std::vector&lt; std::complex&lt; float &gt; &gt; Filtering::get_first_stage_bandpass_taps_h</definition>
+        <argsstring>()</argsstring>
+        <name>get_first_stage_bandpass_taps_h</name>
+        <briefdescription>
+<para>Gets the vector containing bandpass filter taps for all RX frequencies. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>The first stage bandpass taps.</para></simplesect>
+As an example, if there are 3 Rx frequency filters with 32 taps each, this vector will be 96 taps in size. </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/filtering.hpp" line="34" column="1" bodyfile="rx_signal_processing/filtering.cpp" bodystart="284" bodyend="287"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-func">
+      <memberdef kind="function" id="classFiltering_1a2f7a2a8827341209d045b83a817a3cb9" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>uint32_t</type>
+        <definition>uint32_t Filtering::calculate_num_filter_taps</definition>
+        <argsstring>(double rate, double transition_width)</argsstring>
+        <name>calculate_num_filter_taps</name>
+        <param>
+          <type>double</type>
+          <declname>rate</declname>
+        </param>
+        <param>
+          <type>double</type>
+          <declname>transition_width</declname>
+          <defname>transition_band</defname>
+        </param>
+        <briefdescription>
+<para>Calculates the number filter taps. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">rate</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The sampling rate of the input samples to the filter in Hz. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">transition_band</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Width of transition of band of the filter in Hz.</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Number of calculated filter taps.</para></simplesect>
+Calculates number of filter taps according to Lyon&apos;s Understanding Digital Signal Processing(1st edition). Uses Eqn 7-6 to calculate how many filter taps should be used for a given stage. The choice in k=3 was used in the book seems to minimize the amount of ripple in filter. The number of taps will always truncate down to an int. </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/filtering.hpp" line="58" column="1" bodyfile="rx_signal_processing/filtering.cpp" bodystart="85" bodyend="90"/>
+      </memberdef>
+      <memberdef kind="function" id="classFiltering_1a6f7a41f54829b500c9c96ecbc65df816" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::vector&lt; double &gt;</type>
+        <definition>std::vector&lt; double &gt; Filtering::create_normalized_lowpass_filter_bands</definition>
+        <argsstring>(double cutoff, double transition_band, double Fs)</argsstring>
+        <name>create_normalized_lowpass_filter_bands</name>
+        <param>
+          <type>double</type>
+          <declname>cutoff</declname>
+        </param>
+        <param>
+          <type>double</type>
+          <declname>transition_band</declname>
+        </param>
+        <param>
+          <type>double</type>
+          <declname>Fs</declname>
+        </param>
+        <briefdescription>
+<para>Creates the band edges needed to create lowpass filter with remez. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">cutoff</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Cutoff frequency for the lowpass filter in Hz. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">transition_band</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Width of transition from passband to stopband in Hz. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">Fs</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Sampling frequency in Hz.</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>A vector of calculated lowpass filter bands </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/filtering.hpp" line="59" column="1" bodyfile="rx_signal_processing/filtering.cpp" bodystart="60" bodyend="70"/>
+      </memberdef>
+      <memberdef kind="function" id="classFiltering_1a8bec30bad6b20254bc69226dd96a77df" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::vector&lt; std::complex&lt; float &gt; &gt;</type>
+        <definition>std::vector&lt; std::complex&lt; float &gt; &gt; Filtering::create_filter</definition>
+        <argsstring>(uint32_t num_taps, double filter_cutoff, double transition_band, double rate)</argsstring>
+        <name>create_filter</name>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_taps</declname>
+        </param>
+        <param>
+          <type>double</type>
+          <declname>filter_cutoff</declname>
+        </param>
+        <param>
+          <type>double</type>
+          <declname>transition_band</declname>
+        </param>
+        <param>
+          <type>double</type>
+          <declname>rate</declname>
+        </param>
+        <briefdescription>
+<para>Creates and returns a set of lowpass filter taps using the remez exchange method. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">num_taps</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Number of taps the filter should have. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">filter_cutoff</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Cutoff frequency in Hz for the lowpass filter. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">transition_band</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Width of transition of band of the filter in Hz. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">rate</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Sampling rate of input samples.</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>A vector of filter taps. Filter is real, but represented using complex&lt;float&gt; form R + i0 for each tap.</para></simplesect>
+The GNU Octive remez algorithm being used always returns number of taps + 1. The filter is real, but converted to complex&lt;float&gt; with imaginary part being zero since the CUDA kernels will be doing operations on complex numbers. </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/filtering.hpp" line="62" column="1" bodyfile="rx_signal_processing/filtering.cpp" bodystart="107" bodyend="168"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>Class for filtering. </para>    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="rx_signal_processing/filtering.hpp" line="20" column="1" bodyfile="rx_signal_processing/filtering.hpp" bodystart="20" bodyend="65"/>
+    <listofallmembers>
+      <member refid="classFiltering_1a2f7a2a8827341209d045b83a817a3cb9" prot="private" virt="non-virtual"><scope>Filtering</scope><name>calculate_num_filter_taps</name></member>
+      <member refid="classFiltering_1a8bec30bad6b20254bc69226dd96a77df" prot="private" virt="non-virtual"><scope>Filtering</scope><name>create_filter</name></member>
+      <member refid="classFiltering_1a6f7a41f54829b500c9c96ecbc65df816" prot="private" virt="non-virtual"><scope>Filtering</scope><name>create_normalized_lowpass_filter_bands</name></member>
+      <member refid="classFiltering_1ae2aadb28bdfcddc4e7ebbe39003c5ce7" prot="public" virt="non-virtual"><scope>Filtering</scope><name>Filtering</name></member>
+      <member refid="classFiltering_1a0f45d0984f456000f33f630a1ca6944f" prot="private" virt="non-virtual"><scope>Filtering</scope><name>first_stage_bandpass_taps_h</name></member>
+      <member refid="classFiltering_1a8cb4e3807fec66049bade680cca02c24" prot="private" virt="non-virtual"><scope>Filtering</scope><name>first_stage_lowpass_taps</name></member>
+      <member refid="classFiltering_1a0776b03937c5ec302de6be19be86c5e0" prot="public" virt="non-virtual"><scope>Filtering</scope><name>get_first_stage_bandpass_taps_h</name></member>
+      <member refid="classFiltering_1a4853cb50881c4581efe7b662df7fdeb4" prot="public" virt="non-virtual"><scope>Filtering</scope><name>get_first_stage_lowpass_taps</name></member>
+      <member refid="classFiltering_1ad78a4f7feaa83fbd4bb8b50d156d8979" prot="public" virt="non-virtual"><scope>Filtering</scope><name>get_num_first_stage_taps</name></member>
+      <member refid="classFiltering_1acd9b5586b3c604bd09078307699962ce" prot="public" virt="non-virtual"><scope>Filtering</scope><name>get_num_second_stage_taps</name></member>
+      <member refid="classFiltering_1a5bb6d62178c936f4d4f8db4f34356eab" prot="public" virt="non-virtual"><scope>Filtering</scope><name>get_num_third_stage_taps</name></member>
+      <member refid="classFiltering_1a4acbcae0cf7cff5920feaf4b93263dd0" prot="public" virt="non-virtual"><scope>Filtering</scope><name>get_second_stage_lowpass_taps</name></member>
+      <member refid="classFiltering_1abda8f6f06ca68dacba692a70cd48b7dc" prot="public" virt="non-virtual"><scope>Filtering</scope><name>get_third_stage_lowpass_taps</name></member>
+      <member refid="classFiltering_1ae17d34b2bd228ee469d8fd51650a63a6" prot="public" virt="non-virtual"><scope>Filtering</scope><name>mix_first_stage_to_bandpass</name></member>
+      <member refid="classFiltering_1a8dffa10829d82a18a4f0c6f87b78c9f3" prot="private" virt="non-virtual"><scope>Filtering</scope><name>num_first_stage_taps</name></member>
+      <member refid="classFiltering_1adc6c7ac7bfb3408736558ecbb7eebbd7" prot="private" virt="non-virtual"><scope>Filtering</scope><name>num_second_stage_taps</name></member>
+      <member refid="classFiltering_1a93136930b30da873eff2d0636a6e73ea" prot="private" virt="non-virtual"><scope>Filtering</scope><name>num_third_stage_taps</name></member>
+      <member refid="classFiltering_1a98faeb33c65cf49ec33598914ae5d909" prot="public" virt="non-virtual"><scope>Filtering</scope><name>save_filter_to_file</name></member>
+      <member refid="classFiltering_1a34ce9f8785a9b7e5859e365741f4ae9d" prot="private" virt="non-virtual"><scope>Filtering</scope><name>second_stage_lowpass_taps</name></member>
+      <member refid="classFiltering_1a6bd3008508e7656b7a3a90199d5a2dfc" prot="private" virt="non-virtual"><scope>Filtering</scope><name>third_stage_lowpass_taps</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

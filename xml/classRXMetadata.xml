@@ -1,0 +1,166 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.11">
+  <compounddef id="classRXMetadata" kind="class" language="C++" prot="public">
+    <compoundname>RXMetadata</compoundname>
+    <includes refid="usrp_8hpp" local="no">usrp.hpp</includes>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classRXMetadata_1afc601ad169d0f771de213ea8bd4cab01" prot="private" static="no" mutable="no">
+        <type>uhd::rx_metadata_t</type>
+        <definition>uhd::rx_metadata_t RXMetadata::md_</definition>
+        <argsstring></argsstring>
+        <name>md_</name>
+        <briefdescription>
+<para>A raw <ref refid="classUSRP" kindref="compound">USRP</ref> RX metadata object. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="118" column="1" bodyfile="usrp_drivers/n200/usrp.hpp" bodystart="118" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classRXMetadata_1a4a653e3fc23043f673bcbfe6115a6464" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>RXMetadata::RXMetadata</definition>
+        <argsstring>()=default</argsstring>
+        <name>RXMetadata</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="106" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classRXMetadata_1a3173bb38aa61e0513ab98f9d5e290465" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>uhd::rx_metadata_t &amp;</type>
+        <definition>uhd::rx_metadata_t &amp; RXMetadata::get_md</definition>
+        <argsstring>()</argsstring>
+        <name>get_md</name>
+        <briefdescription>
+<para>Gets the RX metadata object that will be retrieved on receiving. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>The <ref refid="classUSRP" kindref="compound">USRP</ref> RX metadata object. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="107" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="572" bodyend="575"/>
+      </memberdef>
+      <memberdef kind="function" id="classRXMetadata_1aeec553aad9cf46fc12b8aa0b0794b477" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool RXMetadata::get_end_of_burst</definition>
+        <argsstring>()</argsstring>
+        <name>get_end_of_burst</name>
+        <briefdescription>
+<para>Gets the end of burst. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>The end of burst. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="108" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="582" bodyend="585"/>
+      </memberdef>
+      <memberdef kind="function" id="classRXMetadata_1a43f0ea91f207e89b06dc1c53ceb4d23d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>uhd::rx_metadata_t::error_code_t</type>
+        <definition>uhd::rx_metadata_t::error_code_t RXMetadata::get_error_code</definition>
+        <argsstring>()</argsstring>
+        <name>get_error_code</name>
+        <briefdescription>
+<para>Gets the error code from the metadata on receive. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>The error code. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="109" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="592" bodyend="595"/>
+      </memberdef>
+      <memberdef kind="function" id="classRXMetadata_1a7439aa14b6c8213854a3b2c0942c08cb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t RXMetadata::get_fragment_offset</definition>
+        <argsstring>()</argsstring>
+        <name>get_fragment_offset</name>
+        <briefdescription>
+<para>Gets the fragment offset. The fragment offset is the sample number at start of buffer. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>The fragment offset. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="110" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="603" bodyend="606"/>
+      </memberdef>
+      <memberdef kind="function" id="classRXMetadata_1a2b0340831019a899a45a560970056d75" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool RXMetadata::get_has_time_spec</definition>
+        <argsstring>()</argsstring>
+        <name>get_has_time_spec</name>
+        <briefdescription>
+<para>Gets the has time specifier status. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>The has time specifier boolean. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="111" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="613" bodyend="616"/>
+      </memberdef>
+      <memberdef kind="function" id="classRXMetadata_1ab77af1cf51ccc90fb2cc3c70fc04d9f3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool RXMetadata::get_out_of_sequence</definition>
+        <argsstring>()</argsstring>
+        <name>get_out_of_sequence</name>
+        <briefdescription>
+<para>Gets out of sequence status. Queries whether a packet is dropped or out of order. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>The out of sequence boolean. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="112" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="623" bodyend="626"/>
+      </memberdef>
+      <memberdef kind="function" id="classRXMetadata_1a5d340412c05f1d228182ef547ff6daaa" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool RXMetadata::get_start_of_burst</definition>
+        <argsstring>()</argsstring>
+        <name>get_start_of_burst</name>
+        <briefdescription>
+<para>Gets the start of burst status. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>The start of burst. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="113" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="633" bodyend="636"/>
+      </memberdef>
+      <memberdef kind="function" id="classRXMetadata_1a4ce77e92b94fd8277f5ab94947d1cd9b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>uhd::time_spec_t</type>
+        <definition>uhd::time_spec_t RXMetadata::get_time_spec</definition>
+        <argsstring>()</argsstring>
+        <name>get_time_spec</name>
+        <briefdescription>
+<para>Gets the time specifier of the packet. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>The time specifier. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="usrp_drivers/n200/usrp.hpp" line="114" column="1" bodyfile="usrp_drivers/n200/usrp.cpp" bodystart="643" bodyend="646"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>Wrapper for the <ref refid="classUSRP" kindref="compound">USRP</ref> RX metadata object. </para>    </briefdescription>
+    <detaileddescription>
+<para>Used to hold and initialize a new tx_metadata_t object. Creates getters and setters to access properties. </para>    </detaileddescription>
+    <location file="usrp_drivers/n200/usrp.hpp" line="104" column="1" bodyfile="usrp_drivers/n200/usrp.hpp" bodystart="104" bodyend="119"/>
+    <listofallmembers>
+      <member refid="classRXMetadata_1aeec553aad9cf46fc12b8aa0b0794b477" prot="public" virt="non-virtual"><scope>RXMetadata</scope><name>get_end_of_burst</name></member>
+      <member refid="classRXMetadata_1a43f0ea91f207e89b06dc1c53ceb4d23d" prot="public" virt="non-virtual"><scope>RXMetadata</scope><name>get_error_code</name></member>
+      <member refid="classRXMetadata_1a7439aa14b6c8213854a3b2c0942c08cb" prot="public" virt="non-virtual"><scope>RXMetadata</scope><name>get_fragment_offset</name></member>
+      <member refid="classRXMetadata_1a2b0340831019a899a45a560970056d75" prot="public" virt="non-virtual"><scope>RXMetadata</scope><name>get_has_time_spec</name></member>
+      <member refid="classRXMetadata_1a3173bb38aa61e0513ab98f9d5e290465" prot="public" virt="non-virtual"><scope>RXMetadata</scope><name>get_md</name></member>
+      <member refid="classRXMetadata_1ab77af1cf51ccc90fb2cc3c70fc04d9f3" prot="public" virt="non-virtual"><scope>RXMetadata</scope><name>get_out_of_sequence</name></member>
+      <member refid="classRXMetadata_1a5d340412c05f1d228182ef547ff6daaa" prot="public" virt="non-virtual"><scope>RXMetadata</scope><name>get_start_of_burst</name></member>
+      <member refid="classRXMetadata_1a4ce77e92b94fd8277f5ab94947d1cd9b" prot="public" virt="non-virtual"><scope>RXMetadata</scope><name>get_time_spec</name></member>
+      <member refid="classRXMetadata_1afc601ad169d0f771de213ea8bd4cab01" prot="private" virt="non-virtual"><scope>RXMetadata</scope><name>md_</name></member>
+      <member refid="classRXMetadata_1a4a653e3fc23043f673bcbfe6115a6464" prot="public" virt="non-virtual"><scope>RXMetadata</scope><name>RXMetadata</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,322 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.11">
+  <compounddef id="dsp_8hpp" kind="file" language="C++">
+    <compoundname>dsp.hpp</compoundname>
+    <includes local="no">cuComplex.h</includes>
+    <includes local="no">complex</includes>
+    <includes local="no">zmq.hpp</includes>
+    <includes local="no">vector</includes>
+    <includes local="no">stdint.h</includes>
+    <includes local="no">cstdlib</includes>
+    <includes local="no">thrust/device_vector.h</includes>
+    <includes local="yes">utils/shared_memory/shared_memory.hpp</includes>
+    <includes local="yes">utils/protobuf/processeddata.pb.h</includes>
+    <includedby refid="decimate_8hpp" local="yes">rx_signal_processing/decimate.hpp</includedby>
+    <incdepgraph>
+      <node id="21">
+        <label>stdint.h</label>
+      </node>
+      <node id="19">
+        <label>zmq.hpp</label>
+      </node>
+      <node id="20">
+        <label>vector</label>
+      </node>
+      <node id="24">
+        <label>utils/shared_memory/shared_memory.hpp</label>
+      </node>
+      <node id="17">
+        <label>cuComplex.h</label>
+      </node>
+      <node id="22">
+        <label>cstdlib</label>
+      </node>
+      <node id="23">
+        <label>thrust/device_vector.h</label>
+      </node>
+      <node id="16">
+        <label>rx_signal_processing/dsp.hpp</label>
+        <link refid="dsp.hpp"/>
+        <childnode refid="17" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+        <childnode refid="19" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+        <childnode refid="21" relation="include">
+        </childnode>
+        <childnode refid="22" relation="include">
+        </childnode>
+        <childnode refid="23" relation="include">
+        </childnode>
+        <childnode refid="24" relation="include">
+        </childnode>
+        <childnode refid="25" relation="include">
+        </childnode>
+      </node>
+      <node id="18">
+        <label>complex</label>
+      </node>
+      <node id="25">
+        <label>utils/protobuf/processeddata.pb.h</label>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="27">
+        <label>rx_signal_processing/decimate.hpp</label>
+        <link refid="decimate_8hpp_source"/>
+      </node>
+      <node id="26">
+        <label>rx_signal_processing/dsp.hpp</label>
+        <link refid="dsp.hpp"/>
+        <childnode refid="27" relation="include">
+        </childnode>
+      </node>
+    </invincdepgraph>
+    <innerclass refid="classDSPCore" prot="public">DSPCore</innerclass>
+      <sectiondef kind="define">
+      <memberdef kind="define" id="dsp_8hpp_1a3f6ea8e9ef58125936d50d7e1181aa7a" prot="public" static="no">
+        <name>gpuErrchk</name>
+        <param><defname>ans</defname></param>
+        <initializer>{ throw_on_cuda_error((ans), __FILE__, __LINE__); }</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="25" column="9" bodyfile="rx_signal_processing/dsp.hpp" bodystart="25" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="dsp_8hpp_1a8728c24a9c379a53051d4a605e9bacfe" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void throw_on_cuda_error</definition>
+        <argsstring>(cudaError_t code, const char *file, int line)</argsstring>
+        <name>throw_on_cuda_error</name>
+        <param>
+          <type>cudaError_t</type>
+          <declname>code</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>file</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>line</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="26" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="26" bodyend="36"/>
+      </memberdef>
+      <memberdef kind="function" id="dsp_8hpp_1a02c2466a46352438151bb0d754d9bdce" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::vector&lt; cudaDeviceProp &gt;</type>
+        <definition>std::vector&lt;cudaDeviceProp&gt; get_gpu_properties</definition>
+        <argsstring>()</argsstring>
+        <name>get_gpu_properties</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="38" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="dsp_8hpp_1aa5ce6132261332bf8544e2e586ff8d5d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void print_gpu_properties</definition>
+        <argsstring>(std::vector&lt; cudaDeviceProp &gt; gpu_properties)</argsstring>
+        <name>print_gpu_properties</name>
+        <param>
+          <type>std::vector&lt; cudaDeviceProp &gt;</type>
+          <declname>gpu_properties</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="39" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="dsp_8hpp_1a915377943acedd9f405c546b636fc55b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void postprocess</definition>
+        <argsstring>(DSPCore *dp)</argsstring>
+        <name>postprocess</name>
+        <param>
+          <type><ref refid="classDSPCore" kindref="compound">DSPCore</ref> *</type>
+          <declname>dp</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="169" column="1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="2"><highlight class="comment">Copyright<sp/>2017<sp/>SuperDARN<sp/>Canada</highlight></codeline>
+<codeline lineno="3"><highlight class="comment"></highlight></codeline>
+<codeline lineno="4"><highlight class="comment">See<sp/>LICENSE<sp/>for<sp/>details</highlight></codeline>
+<codeline lineno="5"><highlight class="comment"></highlight></codeline>
+<codeline lineno="6"><highlight class="comment"><sp/><sp/>\file<sp/>dsp.hpp</highlight></codeline>
+<codeline lineno="7"><highlight class="comment"><sp/><sp/>This<sp/>file<sp/>contains<sp/>the<sp/>declarations<sp/>for<sp/>the<sp/>DSPCore.</highlight></codeline>
+<codeline lineno="8"><highlight class="comment">*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight><highlight class="preprocessor">#ifndef<sp/>DIGITAL_PROCESSING_H</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>DIGITAL_PROCESSING_H</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cuComplex.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;complex&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;zmq.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;stdint.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cstdlib&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;thrust/device_vector.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;utils/shared_memory/shared_memory.hpp&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;utils/protobuf/processeddata.pb.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight><highlight class="comment">//This<sp/>is<sp/>inlined<sp/>and<sp/>used<sp/>to<sp/>detect<sp/>and<sp/>throw<sp/>on<sp/>CUDA<sp/>errors.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>gpuErrchk(ans)<sp/>{<sp/>throw_on_cuda_error((ans),<sp/>__FILE__,<sp/>__LINE__);<sp/>}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>throw_on_cuda_error(cudaError_t<sp/>code,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*file,<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>line)</highlight></codeline>
+<codeline lineno="27"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="28"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(code<sp/>!=<sp/>cudaSuccess)</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><sp/><sp/>std::stringstream<sp/>ss;</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/>ss<sp/>&lt;&lt;<sp/>file<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;(&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>line<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;)&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/>std::string<sp/>file_and_line;</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"><sp/><sp/>ss<sp/>&gt;&gt;<sp/>file_and_line;</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">throw</highlight><highlight class="normal"><sp/>thrust::system_error(code,<sp/>thrust::cuda_category(),<sp/>file_and_line);</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="36"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"></highlight></codeline>
+<codeline lineno="38"><highlight class="normal">std::vector&lt;cudaDeviceProp&gt;<sp/>get_gpu_properties();</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>print_gpu_properties(std::vector&lt;cudaDeviceProp&gt;<sp/>gpu_properties);</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"></highlight></codeline>
+<codeline lineno="41"><highlight class="normal"></highlight></codeline>
+<codeline lineno="45" refid="classDSPCore" refkind="compound"><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classDSPCore" kindref="compound">DSPCore</ref><sp/>{</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>cuda_postprocessing_callback(std::vector&lt;double&gt;<sp/>freqs,<sp/>uint32_t<sp/>total_antennas,</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uint32_t<sp/>num_output_samples_per_antenna_1,</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uint32_t<sp/>num_output_samples_per_antenna_2,</highlight></codeline>
+<codeline lineno="50"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uint32_t<sp/>num_output_samples_per_antenna_3);</highlight></codeline>
+<codeline lineno="51"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>initial_memcpy_callback();</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//http://en.cppreference.com/w/cpp/language/explicit</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="53"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">explicit</highlight><highlight class="normal"><sp/><ref refid="classDSPCore" kindref="compound">DSPCore</ref>(zmq::socket_t<sp/>*ack_s,<sp/>zmq::socket_t<sp/>*timing_s,<sp/>zmq::socket_t<sp/>*data_write_socket,</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uint32_t<sp/>sq_num,<sp/>std::string<sp/>shr_mem_name,std::vector&lt;double&gt;<sp/>freqs);</highlight></codeline>
+<codeline lineno="55"><highlight class="normal"><sp/><sp/>~<ref refid="classDSPCore" kindref="compound">DSPCore</ref>();<sp/></highlight><highlight class="comment">//destructor</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="56"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>allocate_and_copy_rf_samples(uint32_t<sp/>total_samples);</highlight></codeline>
+<codeline lineno="57"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>allocate_and_copy_first_stage_filters(</highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>*taps,<sp/>uint32_t<sp/>total_taps);</highlight></codeline>
+<codeline lineno="58"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>allocate_and_copy_second_stage_filter(</highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>*taps,<sp/>uint32_t<sp/>total_taps);</highlight></codeline>
+<codeline lineno="59"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>allocate_and_copy_third_stage_filter(</highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>*taps,<sp/>uint32_t<sp/>total_taps);</highlight></codeline>
+<codeline lineno="60"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>allocate_first_stage_output(uint32_t<sp/>num_first_stage_output_samples);</highlight></codeline>
+<codeline lineno="61"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>allocate_second_stage_output(uint32_t<sp/>num_second_stage_output_samples);</highlight></codeline>
+<codeline lineno="62"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>allocate_third_stage_output(uint32_t<sp/>num_third_stage_output_samples);</highlight></codeline>
+<codeline lineno="63"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>allocate_and_copy_host_output(uint32_t<sp/>num_host_samples);</highlight></codeline>
+<codeline lineno="64"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>clear_device_and_destroy();</highlight></codeline>
+<codeline lineno="65"><highlight class="normal"><sp/><sp/>cuComplex*<sp/>get_rf_samples_p();</highlight></codeline>
+<codeline lineno="66"><highlight class="normal"><sp/><sp/>cuComplex*<sp/>get_first_stage_bp_filters_p();</highlight></codeline>
+<codeline lineno="67"><highlight class="normal"><sp/><sp/>cuComplex*<sp/>get_second_stage_filter_p();</highlight></codeline>
+<codeline lineno="68"><highlight class="normal"><sp/><sp/>cuComplex*<sp/>get_third_stage_filter_p();</highlight></codeline>
+<codeline lineno="69"><highlight class="normal"><sp/><sp/>cuComplex*<sp/>get_first_stage_output_p();</highlight></codeline>
+<codeline lineno="70"><highlight class="normal"><sp/><sp/>cuComplex*<sp/>get_second_stage_output_p();</highlight></codeline>
+<codeline lineno="71"><highlight class="normal"><sp/><sp/>cuComplex*<sp/>get_third_stage_output_p();</highlight></codeline>
+<codeline lineno="72"><highlight class="normal"><sp/><sp/>cuComplex*<sp/>get_first_stage_output_h();</highlight></codeline>
+<codeline lineno="73"><highlight class="normal"><sp/><sp/>cuComplex*<sp/>get_second_stage_output_h();</highlight></codeline>
+<codeline lineno="74"><highlight class="normal"><sp/><sp/>cuComplex*<sp/>get_third_stage_output_h();</highlight></codeline>
+<codeline lineno="75"><highlight class="normal"><sp/><sp/>std::vector&lt;double&gt;<sp/>get_rx_freqs();</highlight></codeline>
+<codeline lineno="76"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/>get_total_timing();</highlight></codeline>
+<codeline lineno="77"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/>get_decimate_timing();</highlight></codeline>
+<codeline lineno="78"><highlight class="normal"><sp/><sp/>uint32_t<sp/>get_num_antennas();</highlight></codeline>
+<codeline lineno="79"><highlight class="normal"><sp/><sp/>uint32_t<sp/>get_num_first_stage_samples_per_antenna();</highlight></codeline>
+<codeline lineno="80"><highlight class="normal"><sp/><sp/>uint32_t<sp/>get_num_second_stage_samples_per_antenna();</highlight></codeline>
+<codeline lineno="81"><highlight class="normal"><sp/><sp/>uint32_t<sp/>get_num_third_stage_samples_per_antenna();</highlight></codeline>
+<codeline lineno="82"><highlight class="normal"><sp/><sp/>uint32_t<sp/>get_sequence_num();</highlight></codeline>
+<codeline lineno="83"><highlight class="normal"><sp/><sp/>cudaStream_t<sp/>get_cuda_stream();</highlight></codeline>
+<codeline lineno="84"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>start_decimate_timing();</highlight></codeline>
+<codeline lineno="85"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>stop_timing();</highlight></codeline>
+<codeline lineno="86"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>send_ack();</highlight></codeline>
+<codeline lineno="87"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>send_timing();</highlight></codeline>
+<codeline lineno="88"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>send_processed_data(processeddata::ProcessedData<sp/>&amp;pd);</highlight></codeline>
+<codeline lineno="89"><highlight class="normal"></highlight></codeline>
+<codeline lineno="90"><highlight class="normal"></highlight><highlight class="comment">//TODO(keith):<sp/>May<sp/>remove<sp/>sizes<sp/>as<sp/>member<sp/>variables.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="91"><highlight class="normal"><sp/></highlight><highlight class="keyword">private</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="92"><highlight class="normal"></highlight></codeline>
+<codeline lineno="94"><highlight class="normal"><sp/><sp/>cudaStream_t<sp/>stream;</highlight></codeline>
+<codeline lineno="95"><highlight class="normal"></highlight></codeline>
+<codeline lineno="97"><highlight class="normal"><sp/><sp/>uint32_t<sp/>sequence_num;</highlight></codeline>
+<codeline lineno="98"><highlight class="normal"></highlight></codeline>
+<codeline lineno="100"><highlight class="normal"><sp/><sp/>zmq::socket_t<sp/>*ack_socket;</highlight></codeline>
+<codeline lineno="101"><highlight class="normal"></highlight></codeline>
+<codeline lineno="103"><highlight class="normal"><sp/><sp/>zmq::socket_t<sp/>*timing_socket;</highlight></codeline>
+<codeline lineno="104"><highlight class="normal"></highlight></codeline>
+<codeline lineno="105"><highlight class="normal"><sp/><sp/>zmq::socket_t<sp/>*data_write_socket;</highlight></codeline>
+<codeline lineno="107"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/>total_process_timing_ms;</highlight></codeline>
+<codeline lineno="108"><highlight class="normal"></highlight></codeline>
+<codeline lineno="109"><highlight class="normal"></highlight></codeline>
+<codeline lineno="111"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/>decimate_kernel_timing_ms;</highlight></codeline>
+<codeline lineno="112"><highlight class="normal"></highlight></codeline>
+<codeline lineno="114"><highlight class="normal"><sp/><sp/>cuComplex<sp/>*rf_samples_d;</highlight></codeline>
+<codeline lineno="115"><highlight class="normal"></highlight></codeline>
+<codeline lineno="117"><highlight class="normal"><sp/><sp/>cuComplex<sp/>*first_stage_bp_filters_d;</highlight></codeline>
+<codeline lineno="118"><highlight class="normal"></highlight></codeline>
+<codeline lineno="120"><highlight class="normal"><sp/><sp/>cuComplex<sp/>*second_stage_filter_d;</highlight></codeline>
+<codeline lineno="121"><highlight class="normal"></highlight></codeline>
+<codeline lineno="123"><highlight class="normal"><sp/><sp/>cuComplex<sp/>*third_stage_filter_d;</highlight></codeline>
+<codeline lineno="124"><highlight class="normal"></highlight></codeline>
+<codeline lineno="126"><highlight class="normal"><sp/><sp/>cuComplex<sp/>*first_stage_output_d;</highlight></codeline>
+<codeline lineno="127"><highlight class="normal"></highlight></codeline>
+<codeline lineno="129"><highlight class="normal"><sp/><sp/>cuComplex<sp/>*second_stage_output_d;</highlight></codeline>
+<codeline lineno="130"><highlight class="normal"></highlight></codeline>
+<codeline lineno="132"><highlight class="normal"><sp/><sp/>cuComplex<sp/>*third_stage_output_d;</highlight></codeline>
+<codeline lineno="133"><highlight class="normal"></highlight></codeline>
+<codeline lineno="135"><highlight class="normal"><sp/><sp/>cuComplex<sp/>*host_output_h;</highlight></codeline>
+<codeline lineno="136"><highlight class="normal"></highlight></codeline>
+<codeline lineno="138"><highlight class="normal"><sp/><sp/>cudaEvent_t<sp/>initial_start;</highlight></codeline>
+<codeline lineno="139"><highlight class="normal"></highlight></codeline>
+<codeline lineno="141"><highlight class="normal"><sp/><sp/>cudaEvent_t<sp/>kernel_start;</highlight></codeline>
+<codeline lineno="142"><highlight class="normal"></highlight></codeline>
+<codeline lineno="144"><highlight class="normal"><sp/><sp/>cudaEvent_t<sp/>stop;</highlight></codeline>
+<codeline lineno="145"><highlight class="normal"></highlight></codeline>
+<codeline lineno="147"><highlight class="normal"><sp/><sp/>cudaEvent_t<sp/>mem_transfer_end;</highlight></codeline>
+<codeline lineno="148"><highlight class="normal"></highlight></codeline>
+<codeline lineno="150"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/>mem_time_ms;</highlight></codeline>
+<codeline lineno="151"><highlight class="normal"></highlight></codeline>
+<codeline lineno="153"><highlight class="normal"><sp/><sp/>SharedMemoryHandler<sp/>shr_mem;</highlight></codeline>
+<codeline lineno="154"><highlight class="normal"></highlight></codeline>
+<codeline lineno="155"><highlight class="normal"><sp/><sp/>cuComplex<sp/>*first_stage_output_h;</highlight></codeline>
+<codeline lineno="156"><highlight class="normal"><sp/><sp/>cuComplex<sp/>*second_stage_output_h;</highlight></codeline>
+<codeline lineno="157"><highlight class="normal"><sp/><sp/>cuComplex<sp/>*third_stage_output_h;</highlight></codeline>
+<codeline lineno="158"><highlight class="normal"></highlight></codeline>
+<codeline lineno="159"><highlight class="normal"><sp/><sp/>std::vector&lt;double&gt;<sp/>rx_freqs;</highlight></codeline>
+<codeline lineno="160"><highlight class="normal"><sp/><sp/>uint32_t<sp/>num_antennas;</highlight></codeline>
+<codeline lineno="161"><highlight class="normal"><sp/><sp/>uint32_t<sp/>num_first_stage_samples_per_antenna;</highlight></codeline>
+<codeline lineno="162"><highlight class="normal"><sp/><sp/>uint32_t<sp/>num_second_stage_samples_per_antenna;</highlight></codeline>
+<codeline lineno="163"><highlight class="normal"><sp/><sp/>uint32_t<sp/>num_third_stage_samples_per_antenna;</highlight></codeline>
+<codeline lineno="164"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>allocate_and_copy_first_stage_host(uint32_t<sp/>num_first_stage_output_samples);</highlight></codeline>
+<codeline lineno="165"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>allocate_and_copy_second_stage_host(uint32_t<sp/>num_second_stage_output_samples);</highlight></codeline>
+<codeline lineno="166"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>allocate_and_copy_third_stage_host(uint32_t<sp/>num_third_stage_output_samples);</highlight></codeline>
+<codeline lineno="167"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="168"><highlight class="normal"></highlight></codeline>
+<codeline lineno="169"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>postprocess(<ref refid="classDSPCore" kindref="compound">DSPCore</ref><sp/>*dp);</highlight></codeline>
+<codeline lineno="170"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight></codeline>
+    </programlisting>
+    <location file="rx_signal_processing/dsp.hpp"/>
+  </compounddef>
+</doxygen>

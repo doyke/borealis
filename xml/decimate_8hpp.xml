@@ -1,0 +1,514 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.11">
+  <compounddef id="decimate_8hpp" kind="file" language="C++">
+    <compoundname>decimate.hpp</compoundname>
+    <includes refid="dsp_8hpp" local="yes">dsp.hpp</includes>
+    <incdepgraph>
+      <node id="8">
+        <label>stdint.h</label>
+      </node>
+      <node id="2">
+        <label>rx_signal_processing/decimate.hpp</label>
+        <link refid="decimate.hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>zmq.hpp</label>
+      </node>
+      <node id="7">
+        <label>vector</label>
+      </node>
+      <node id="11">
+        <label>utils/shared_memory/shared_memory.hpp</label>
+      </node>
+      <node id="4">
+        <label>cuComplex.h</label>
+      </node>
+      <node id="9">
+        <label>cstdlib</label>
+      </node>
+      <node id="10">
+        <label>thrust/device_vector.h</label>
+      </node>
+      <node id="3">
+        <label>dsp.hpp</label>
+        <link refid="dsp_8hpp_source"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="10" relation="include">
+        </childnode>
+        <childnode refid="11" relation="include">
+        </childnode>
+        <childnode refid="12" relation="include">
+        </childnode>
+      </node>
+      <node id="5">
+        <label>complex</label>
+      </node>
+      <node id="12">
+        <label>utils/protobuf/processeddata.pb.h</label>
+      </node>
+    </incdepgraph>
+      <sectiondef kind="enum">
+      <memberdef kind="enum" id="decimate_8hpp_1a66cb5bf7d7316b32a2a737eabf4577b7" prot="public" static="no">
+        <name>DecimationType</name>
+        <enumvalue id="decimate_8hpp_1a66cb5bf7d7316b32a2a737eabf4577b7af4264a824899ff8f0fc5962ff60b9cef" prot="public">
+          <name>lowpass</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="decimate_8hpp_1a66cb5bf7d7316b32a2a737eabf4577b7aeaa843f2c3b43878349060f8b50c519d" prot="public">
+          <name>bandpass</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/decimate.hpp" line="13" column="1" bodyfile="rx_signal_processing/decimate.hpp" bodystart="13" bodyend="13"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="decimate_8hpp_1a76906a8ca81e56497200939b7c9057b9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void bandpass_decimate1024_wrapper</definition>
+        <argsstring>(cuComplex *input_samples, cuComplex *decimated_samples, cuComplex *filter_taps, uint32_t dm_rate, uint32_t samples_per_antenna, uint32_t num_taps_per_filter, uint32_t num_freqs, uint32_t num_antennas, cudaStream_t stream)</argsstring>
+        <name>bandpass_decimate1024_wrapper</name>
+        <param>
+          <type>cuComplex *</type>
+          <declname>input_samples</declname>
+        </param>
+        <param>
+          <type>cuComplex *</type>
+          <declname>decimated_samples</declname>
+        </param>
+        <param>
+          <type>cuComplex *</type>
+          <declname>filter_taps</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>dm_rate</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>samples_per_antenna</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_taps_per_filter</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_freqs</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_antennas</declname>
+        </param>
+        <param>
+          <type>cudaStream_t</type>
+          <declname>stream</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/decimate.hpp" line="15" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="decimate_8hpp_1a614d86ae3ca09398c7e2e3733d39c600" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void bandpass_decimate2048_wrapper</definition>
+        <argsstring>(cuComplex *input_samples, cuComplex *decimated_samples, cuComplex *filter_taps, uint32_t dm_rate, uint32_t samples_per_antenna, uint32_t num_taps_per_filter, uint32_t num_freqs, uint32_t num_antennas, cudaStream_t stream)</argsstring>
+        <name>bandpass_decimate2048_wrapper</name>
+        <param>
+          <type>cuComplex *</type>
+          <declname>input_samples</declname>
+        </param>
+        <param>
+          <type>cuComplex *</type>
+          <declname>decimated_samples</declname>
+        </param>
+        <param>
+          <type>cuComplex *</type>
+          <declname>filter_taps</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>dm_rate</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>samples_per_antenna</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_taps_per_filter</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_freqs</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_antennas</declname>
+        </param>
+        <param>
+          <type>cudaStream_t</type>
+          <declname>stream</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/decimate.hpp" line="21" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="decimate_8hpp_1aa728303af102502c44030f41b18cb272" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void lowpass_decimate1024_wrapper</definition>
+        <argsstring>(cuComplex *input_samples, cuComplex *decimated_samples, cuComplex *filter_taps, uint32_t dm_rate, uint32_t samples_per_antenna, uint32_t num_taps_per_filter, uint32_t num_freqs, uint32_t num_antennas, cudaStream_t stream)</argsstring>
+        <name>lowpass_decimate1024_wrapper</name>
+        <param>
+          <type>cuComplex *</type>
+          <declname>input_samples</declname>
+        </param>
+        <param>
+          <type>cuComplex *</type>
+          <declname>decimated_samples</declname>
+        </param>
+        <param>
+          <type>cuComplex *</type>
+          <declname>filter_taps</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>dm_rate</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>samples_per_antenna</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_taps_per_filter</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_freqs</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_antennas</declname>
+        </param>
+        <param>
+          <type>cudaStream_t</type>
+          <declname>stream</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/decimate.hpp" line="27" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="decimate_8hpp_1a69bfb2d5573eeee60f83f6c115e612c5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void lowpass_decimate2048_wrapper</definition>
+        <argsstring>(cuComplex *input_samples, cuComplex *decimated_samples, cuComplex *filter_taps, uint32_t dm_rate, uint32_t samples_per_antenna, uint32_t num_taps_per_filter, uint32_t num_freqs, uint32_t num_antennas, cudaStream_t stream)</argsstring>
+        <name>lowpass_decimate2048_wrapper</name>
+        <param>
+          <type>cuComplex *</type>
+          <declname>input_samples</declname>
+        </param>
+        <param>
+          <type>cuComplex *</type>
+          <declname>decimated_samples</declname>
+        </param>
+        <param>
+          <type>cuComplex *</type>
+          <declname>filter_taps</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>dm_rate</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>samples_per_antenna</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_taps_per_filter</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_freqs</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_antennas</declname>
+        </param>
+        <param>
+          <type>cudaStream_t</type>
+          <declname>stream</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/decimate.hpp" line="33" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="decimate_8hpp_1a11ed8bdde63ef7325a99f662e2deda17" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>DecimationType</type>
+            <declname>type</declname>
+            <defname>type</defname>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void call_decimate</definition>
+        <argsstring>(cuComplex *input_samples, cuComplex *decimated_samples, cuComplex *filter_taps, uint32_t dm_rate, uint32_t samples_per_antenna, uint32_t num_taps_per_filter, uint32_t num_freqs, uint32_t num_antennas, const char *output_msg, cudaStream_t stream)</argsstring>
+        <name>call_decimate</name>
+        <param>
+          <type>cuComplex *</type>
+          <declname>input_samples</declname>
+        </param>
+        <param>
+          <type>cuComplex *</type>
+          <declname>decimated_samples</declname>
+        </param>
+        <param>
+          <type>cuComplex *</type>
+          <declname>filter_taps</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>dm_rate</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>samples_per_antenna</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_taps_per_filter</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_freqs</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_antennas</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>output_msg</declname>
+        </param>
+        <param>
+          <type>cudaStream_t</type>
+          <declname>stream</declname>
+        </param>
+        <briefdescription>
+<para>Selects which decimate kernel to run. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">input_samples</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A pointer to original input samples from each antenna to decimate. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">decimated_samples</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A pointer to a buffer to place output samples for each frequency after decimation. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">filter_taps</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A pointer to one or more filters needed for each frequency. If using lowpass, one filter is used. If using bandpass, there is one filter for each RX frequency. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">dm_rate</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Decimation rate. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">samples_per_antenna</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The number of samples per antenna in the input set of samples for one frequency. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">num_taps_per_filter</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Number of taps per filter. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">num_freqs</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Number of receive frequencies. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">num_antennas</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Number of antennas for which there are samples. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">output_msg</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A simple character string that can be used to debug or distinguish different stages. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">stream</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The CUDA stream for which to run a run a kernel.</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+Based off the total number of filter taps, this function will choose what decimate kernel to use. </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/decimate.hpp" line="65" column="1" bodyfile="rx_signal_processing/decimate.hpp" bodystart="65" bodyend="110"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="2"><highlight class="comment">Copyright<sp/>2017<sp/>SuperDARN<sp/>Canada</highlight></codeline>
+<codeline lineno="3"><highlight class="comment"></highlight></codeline>
+<codeline lineno="4"><highlight class="comment">See<sp/>LICENSE<sp/>for<sp/>details</highlight></codeline>
+<codeline lineno="5"><highlight class="comment"><sp/><sp/>\file<sp/>decimate.hpp</highlight></codeline>
+<codeline lineno="6"><highlight class="comment">*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight><highlight class="preprocessor">#ifndef<sp/>DECIMATE_H</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>DECIMATE_H</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;dsp.hpp&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight><highlight class="keyword">enum<sp/>class</highlight><highlight class="normal"><sp/>DecimationType<sp/>{lowpass,<sp/>bandpass};</highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>bandpass_decimate1024_wrapper(cuComplex*<sp/>input_samples,</highlight></codeline>
+<codeline lineno="16"><highlight class="normal"><sp/><sp/>cuComplex*<sp/>decimated_samples,</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"><sp/><sp/>cuComplex*<sp/>filter_taps,<sp/>uint32_t<sp/>dm_rate,</highlight></codeline>
+<codeline lineno="18"><highlight class="normal"><sp/><sp/>uint32_t<sp/>samples_per_antenna,<sp/>uint32_t<sp/>num_taps_per_filter,<sp/>uint32_t<sp/>num_freqs,</highlight></codeline>
+<codeline lineno="19"><highlight class="normal"><sp/><sp/>uint32_t<sp/>num_antennas,<sp/>cudaStream_t<sp/>stream);</highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>bandpass_decimate2048_wrapper(cuComplex*<sp/>input_samples,</highlight></codeline>
+<codeline lineno="22"><highlight class="normal"><sp/><sp/>cuComplex*<sp/>decimated_samples,</highlight></codeline>
+<codeline lineno="23"><highlight class="normal"><sp/><sp/>cuComplex*<sp/>filter_taps,<sp/>uint32_t<sp/>dm_rate,</highlight></codeline>
+<codeline lineno="24"><highlight class="normal"><sp/><sp/>uint32_t<sp/>samples_per_antenna,<sp/>uint32_t<sp/>num_taps_per_filter,<sp/>uint32_t<sp/>num_freqs,</highlight></codeline>
+<codeline lineno="25"><highlight class="normal"><sp/><sp/>uint32_t<sp/>num_antennas,<sp/>cudaStream_t<sp/>stream);</highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>lowpass_decimate1024_wrapper(cuComplex*<sp/>input_samples,</highlight></codeline>
+<codeline lineno="28"><highlight class="normal"><sp/><sp/>cuComplex*<sp/>decimated_samples,</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"><sp/><sp/>cuComplex*<sp/>filter_taps,<sp/>uint32_t<sp/>dm_rate,</highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><sp/><sp/>uint32_t<sp/>samples_per_antenna,<sp/>uint32_t<sp/>num_taps_per_filter,<sp/>uint32_t<sp/>num_freqs,</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/>uint32_t<sp/>num_antennas,<sp/>cudaStream_t<sp/>stream);</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"></highlight></codeline>
+<codeline lineno="33"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>lowpass_decimate2048_wrapper(cuComplex*<sp/>input_samples,</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/>cuComplex*<sp/>decimated_samples,</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/>cuComplex*<sp/>filter_taps,<sp/>uint32_t<sp/>dm_rate,</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"><sp/><sp/>uint32_t<sp/>samples_per_antenna,<sp/>uint32_t<sp/>num_taps_per_filter,<sp/>uint32_t<sp/>num_freqs,</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"><sp/><sp/>uint32_t<sp/>num_antennas,<sp/>cudaStream_t<sp/>stream);</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"></highlight></codeline>
+<codeline lineno="64"><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;DecimationType<sp/>type&gt;</highlight></codeline>
+<codeline lineno="65"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>call_decimate(cuComplex*<sp/>input_samples,</highlight></codeline>
+<codeline lineno="66"><highlight class="normal"><sp/><sp/>cuComplex*<sp/>decimated_samples,</highlight></codeline>
+<codeline lineno="67"><highlight class="normal"><sp/><sp/>cuComplex*<sp/>filter_taps,<sp/>uint32_t<sp/>dm_rate,</highlight></codeline>
+<codeline lineno="68"><highlight class="normal"><sp/><sp/>uint32_t<sp/>samples_per_antenna,<sp/>uint32_t<sp/>num_taps_per_filter,<sp/>uint32_t<sp/>num_freqs,</highlight></codeline>
+<codeline lineno="69"><highlight class="normal"><sp/><sp/>uint32_t<sp/>num_antennas,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*output_msg,<sp/>cudaStream_t<sp/>stream)<sp/>{</highlight></codeline>
+<codeline lineno="70"><highlight class="normal"></highlight></codeline>
+<codeline lineno="71"><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>output_msg<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline lineno="72"><highlight class="normal"></highlight></codeline>
+<codeline lineno="73"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>gpu_properties<sp/>=<sp/>get_gpu_properties();</highlight></codeline>
+<codeline lineno="74"><highlight class="normal"></highlight></codeline>
+<codeline lineno="75"><highlight class="normal"></highlight></codeline>
+<codeline lineno="76"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(type<sp/>==<sp/>DecimationType::bandpass)<sp/>{</highlight></codeline>
+<codeline lineno="77"><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>Running<sp/>bandpass&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline lineno="78"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//For<sp/>now<sp/>we<sp/>have<sp/>a<sp/>kernel<sp/>that<sp/>will<sp/>process<sp/>2<sp/>samples<sp/>per<sp/>thread<sp/>if<sp/>need<sp/>be</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="79"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(num_taps_per_filter<sp/>*<sp/>num_freqs<sp/>&gt;<sp/>2<sp/>*<sp/>gpu_properties[0].maxThreadsPerBlock)<sp/>{</highlight></codeline>
+<codeline lineno="80"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//TODO(Keith)<sp/>:<sp/>handle<sp/>error</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="81"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="82"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(num_taps_per_filter<sp/>*<sp/>num_freqs<sp/>&gt;<sp/>gpu_properties[0].maxThreadsPerBlock)<sp/>{</highlight></codeline>
+<codeline lineno="83"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>bandpass_decimate2048_wrapper(input_samples,<sp/>decimated_samples,<sp/>filter_taps,<sp/><sp/>dm_rate,</highlight></codeline>
+<codeline lineno="84"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>samples_per_antenna,<sp/>num_taps_per_filter,<sp/>num_freqs,<sp/>num_antennas,<sp/>stream);</highlight></codeline>
+<codeline lineno="85"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="86"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="87"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>bandpass_decimate1024_wrapper(input_samples,<sp/>decimated_samples,<sp/>filter_taps,<sp/><sp/>dm_rate,</highlight></codeline>
+<codeline lineno="88"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>samples_per_antenna,<sp/>num_taps_per_filter,<sp/>num_freqs,<sp/>num_antennas,<sp/>stream);</highlight></codeline>
+<codeline lineno="89"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="90"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="91"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(type<sp/>==<sp/>DecimationType::lowpass){</highlight></codeline>
+<codeline lineno="92"><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>Running<sp/>lowpass&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline lineno="93"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(num_taps_per_filter<sp/>&gt;<sp/>2<sp/>*<sp/>gpu_properties[0].maxThreadsPerBlock)<sp/>{</highlight></codeline>
+<codeline lineno="94"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//TODO(Keith)<sp/>:<sp/>handle<sp/>error</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="95"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="96"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(num_taps_per_filter<sp/>&gt;<sp/>gpu_properties[0].maxThreadsPerBlock)<sp/>{</highlight></codeline>
+<codeline lineno="97"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>lowpass_decimate2048_wrapper(input_samples,<sp/>decimated_samples,<sp/>filter_taps,<sp/><sp/>dm_rate,</highlight></codeline>
+<codeline lineno="98"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>samples_per_antenna,<sp/>num_taps_per_filter,<sp/>num_freqs,<sp/>num_antennas,<sp/>stream);</highlight></codeline>
+<codeline lineno="99"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="100"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="101"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>lowpass_decimate1024_wrapper(input_samples,<sp/>decimated_samples,<sp/>filter_taps,<sp/><sp/>dm_rate,</highlight></codeline>
+<codeline lineno="102"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>samples_per_antenna,<sp/>num_taps_per_filter,<sp/>num_freqs,<sp/>num_antennas,<sp/>stream);</highlight></codeline>
+<codeline lineno="103"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="104"><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline lineno="105"><highlight class="normal"></highlight></codeline>
+<codeline lineno="106"><highlight class="normal"></highlight></codeline>
+<codeline lineno="107"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>This<sp/>is<sp/>to<sp/>detect<sp/>invalid<sp/>launch<sp/>parameters.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="108"><highlight class="normal"><sp/><sp/>gpuErrchk(cudaPeekAtLastError());</highlight></codeline>
+<codeline lineno="109"><highlight class="normal"></highlight></codeline>
+<codeline lineno="110"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="111"><highlight class="normal"></highlight></codeline>
+<codeline lineno="112"><highlight class="normal"></highlight></codeline>
+<codeline lineno="113"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight></codeline>
+    </programlisting>
+    <location file="rx_signal_processing/decimate.hpp"/>
+  </compounddef>
+</doxygen>

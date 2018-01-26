@@ -1,0 +1,717 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.11">
+  <compounddef id="decimate_8cu" kind="file" language="C++">
+    <compoundname>decimate.cu</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline><highlight class="normal">/*</highlight></codeline>
+<codeline><highlight class="normal">Copyright<sp/>2017<sp/>SuperDARN<sp/>Canada</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">See<sp/>LICENSE<sp/>for<sp/>details</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">This<sp/>file<sp/>contains<sp/>the<sp/>CUDA<sp/>code<sp/>used<sp/>to<sp/>process<sp/>the<sp/>large<sp/>amount<sp/>of<sp/>data</highlight></codeline>
+<codeline><highlight class="normal">involved<sp/>with<sp/>radar<sp/>receive<sp/>side<sp/>processing.</highlight></codeline>
+<codeline><highlight class="normal">*/</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;cuComplex.h&gt;<sp/>//cuComplex<sp/>type<sp/>and<sp/>all<sp/>cuCmulf/cuCaddf<sp/>functions.</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;iostream&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;stdint.h&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&quot;decimate.hpp&quot;</highlight></codeline>
+<codeline><highlight class="normal">//This<sp/>keeps<sp/>the<sp/>contained<sp/>functions<sp/>local<sp/>to<sp/>this<sp/>file.</highlight></codeline>
+<codeline><highlight class="normal">namespace<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Creates<sp/>a<sp/>new<sp/>set<sp/>of<sp/>grid<sp/>dimensions<sp/>for<sp/>a<sp/>bandpass<sp/>decimate<sp/>CUDA<sp/>kernel.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@param[in]<sp/><sp/>num_samples<sp/><sp/><sp/>Number<sp/>of<sp/>input<sp/>samples.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@param[in]<sp/><sp/>dm_rate<sp/><sp/><sp/><sp/><sp/><sp/><sp/>Decimation<sp/>rate.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@param[in]<sp/><sp/>num_antennas<sp/><sp/>Number<sp/>of<sp/>antennas<sp/>for<sp/>which<sp/>there<sp/>are<sp/>samples.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@return<sp/><sp/><sp/><sp/><sp/>New<sp/>grid<sp/>dimensions<sp/>for<sp/>the<sp/>kernel.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>dim3<sp/>create_bandpass_grid(uint32_t<sp/>num_samples,<sp/>uint32_t<sp/>dm_rate,<sp/>uint32_t<sp/>num_antennas)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>num_blocks_x<sp/>=<sp/>num_samples/dm_rate;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>num_blocks_y<sp/>=<sp/>num_antennas;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>num_blocks_z<sp/>=<sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/><sp/><sp/>Grid<sp/>size:<sp/>&quot;<sp/>&lt;&lt;<sp/>num_blocks_x<sp/>&lt;&lt;<sp/>&quot;<sp/>x<sp/>&quot;<sp/>&lt;&lt;<sp/>num_blocks_y<sp/>&lt;&lt;<sp/>&quot;<sp/>x<sp/>&quot;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>num_blocks_z<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>dim3<sp/>dimGrid(num_blocks_x,num_blocks_y,num_blocks_z);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>return<sp/>dimGrid;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Creates<sp/>a<sp/>new<sp/>set<sp/>of<sp/>block<sp/>dimensions<sp/>for<sp/>a<sp/>bandpass<sp/>decimate<sp/>CUDA<sp/>kernel.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@param[in]<sp/><sp/>num_taps_per_filter<sp/><sp/>Number<sp/>of<sp/>taps<sp/>per<sp/>filter.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@param[in]<sp/><sp/>num_freqs<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Number<sp/>of<sp/>receive<sp/>frequencies.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@return<sp/><sp/><sp/><sp/><sp/>New<sp/>block<sp/>dimensions<sp/>for<sp/>the<sp/>kernel.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>dim3<sp/>create_bandpass_block(uint32_t<sp/>num_taps_per_filter,<sp/>uint32_t<sp/>num_freqs)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>num_threads_x<sp/>=<sp/>num_taps_per_filter;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>num_threads_y<sp/>=<sp/>num_freqs;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>num_threads_z<sp/>=<sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/><sp/><sp/>Block<sp/>size:<sp/>&quot;<sp/>&lt;&lt;<sp/>num_threads_x<sp/>&lt;&lt;<sp/>&quot;<sp/>x<sp/>&quot;<sp/>&lt;&lt;<sp/>num_threads_y<sp/>&lt;&lt;<sp/>&quot;<sp/>x<sp/>&quot;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>num_threads_z<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>dim3<sp/>dimBlock(num_threads_x,num_threads_y,num_threads_z);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>return<sp/>dimBlock;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Creates<sp/>a<sp/>new<sp/>set<sp/>of<sp/>grid<sp/>dimensions<sp/>for<sp/>a<sp/>lowpass<sp/>decimate<sp/>CUDA<sp/>kernel.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@param[in]<sp/><sp/>num_samples<sp/><sp/><sp/>Number<sp/>of<sp/>input<sp/>samples<sp/>in<sp/>a<sp/>frequency<sp/>dataset.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@param[in]<sp/><sp/>dm_rate<sp/><sp/><sp/><sp/><sp/><sp/><sp/>Decimation<sp/>rate.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@param[in]<sp/><sp/>num_antennas<sp/><sp/>Number<sp/>of<sp/>antennas<sp/>for<sp/>which<sp/>there<sp/>are<sp/>samples.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@param[in]<sp/><sp/>num_freqs<sp/><sp/><sp/><sp/><sp/>Number<sp/>of<sp/>receive<sp/>frequencies.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@return<sp/><sp/><sp/><sp/><sp/>New<sp/>grid<sp/>dimensions<sp/>for<sp/>the<sp/>kernel.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>dim3<sp/>create_lowpass_grid(uint32_t<sp/>num_samples,<sp/>uint32_t<sp/>dm_rate,<sp/>uint32_t<sp/>num_antennas,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uint32_t<sp/>num_freqs)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>num_blocks_x<sp/>=<sp/>num_samples/dm_rate;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>num_blocks_y<sp/>=<sp/>num_antennas;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>num_blocks_z<sp/>=<sp/>num_freqs;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/><sp/><sp/>Grid<sp/>size:<sp/>&quot;<sp/>&lt;&lt;<sp/>num_blocks_x<sp/>&lt;&lt;<sp/>&quot;<sp/>x<sp/>&quot;<sp/>&lt;&lt;<sp/>num_blocks_y<sp/>&lt;&lt;<sp/>&quot;<sp/>x<sp/>&quot;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>num_blocks_z<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>dim3<sp/>dimGrid(num_blocks_x,num_blocks_y,num_blocks_z);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>return<sp/>dimGrid;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Creates<sp/>a<sp/>new<sp/>set<sp/>of<sp/>block<sp/>dimensions<sp/>for<sp/>a<sp/>lowpass<sp/>decimate<sp/>CUDA<sp/>kernel.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@param[in]<sp/><sp/>num_taps_per_filter<sp/><sp/>Number<sp/>of<sp/>taps<sp/>per<sp/>filter.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@return<sp/><sp/><sp/><sp/><sp/>New<sp/>block<sp/>dimensions<sp/>for<sp/>the<sp/>kernel.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>dim3<sp/>create_lowpass_block(uint32_t<sp/>num_taps_per_filter)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>num_threads_x<sp/>=<sp/>num_taps_per_filter;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>num_threads_y<sp/>=<sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>num_threads_z<sp/>=<sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/><sp/><sp/>Block<sp/>size:<sp/>&quot;<sp/>&lt;&lt;<sp/>num_threads_x<sp/>&lt;&lt;<sp/>&quot;<sp/>x<sp/>&quot;<sp/>&lt;&lt;<sp/>num_threads_y<sp/>&lt;&lt;<sp/>&quot;<sp/>x<sp/>&quot;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>num_threads_z<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>dim3<sp/>dimBlock(num_threads_x,num_threads_y,num_threads_z);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>return<sp/>dimBlock;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Overloads<sp/>__shfl_down<sp/>to<sp/>handle<sp/>cuComplex.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>var<sp/><sp/><sp/><sp/><sp/><sp/>cuComplex<sp/>value<sp/>to<sp/>shuffle.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>srcLane<sp/><sp/>Relative<sp/>lane<sp/>from<sp/>within<sp/>the<sp/>warp<sp/>that<sp/>should<sp/>shuffle<sp/>its<sp/>variable<sp/>down.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>width<sp/><sp/><sp/><sp/>Section<sp/>of<sp/>the<sp/>warp<sp/>to<sp/>shuffle.<sp/>Defaults<sp/>to<sp/>full<sp/>warp<sp/>size.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@return<sp/><sp/><sp/><sp/><sp/>Shuffled<sp/>cuComplex<sp/>variable.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>__shfl<sp/>can<sp/>only<sp/>shuffle<sp/>4<sp/>bytes<sp/>at<sp/>time.<sp/>This<sp/>overload<sp/>utilizes<sp/>a<sp/>trick<sp/>similar<sp/>to<sp/>the<sp/>below</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>link<sp/>in<sp/>order<sp/>to<sp/>shuffle<sp/>8<sp/>byte<sp/>values.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>https://devblogs.nvidia.com/parallelforall/faster-parallel-reductions-kepler/</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>http://docs.nvidia.com/cuda/cuda-c-programming-guide/#warp-shuffle-functions</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">__device__<sp/>inline<sp/>cuComplex<sp/>__shfl_down(cuComplex<sp/>var,<sp/>unsigned<sp/>int<sp/>srcLane,<sp/>int<sp/>width=32){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>float2<sp/>a<sp/>=<sp/>*reinterpret_cast&lt;float2*&gt;(&amp;var);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>a.x<sp/>=<sp/>__shfl_down(a.x,<sp/>srcLane,<sp/>width);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>a.y<sp/>=<sp/>__shfl_down(a.y,<sp/>srcLane,<sp/>width);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>return<sp/>*reinterpret_cast&lt;cuComplex*&gt;(&amp;a);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Performs<sp/>a<sp/>parallel<sp/>reduction<sp/>to<sp/>sum<sp/>a<sp/>series<sp/>of<sp/>values<sp/>together.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param<sp/><sp/><sp/><sp/><sp/><sp/>data<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>a<sp/>set<sp/>of<sp/>cuComplex<sp/>data<sp/>to<sp/>reduce.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>tap_offset<sp/><sp/>The<sp/>offset<sp/>into<sp/>the<sp/>data<sp/>from<sp/>which<sp/>to<sp/>pull<sp/>values.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@return<sp/><sp/><sp/><sp/><sp/>Final<sp/>sum<sp/>after<sp/>reduction.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>NVIDIA<sp/>supplies<sp/>many<sp/>versions<sp/>of<sp/>optimized<sp/>parallel<sp/>reduction.<sp/>This<sp/>is<sp/>a<sp/>slightly<sp/>modified</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>version<sp/>of<sp/>reduction<sp/>#5<sp/>from<sp/>NVIDIA<sp/>examples.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>/usr/local/cuda/samples/6_Advanced/reduction</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">__device__<sp/>cuComplex<sp/>parallel_reduce(cuComplex*<sp/>data,<sp/>uint32_t<sp/>tap_offset)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>filter_tap_num<sp/>=<sp/>threadIdx.x;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>num_filter_taps<sp/>=<sp/>blockDim.x;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cuComplex<sp/>total_sum<sp/>=<sp/>data[tap_offset];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>if<sp/>((num_filter_taps<sp/>&gt;=<sp/>1024)<sp/>&amp;&amp;<sp/>(filter_tap_num<sp/>&lt;<sp/>512))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>total_sum<sp/>=<sp/>cuCaddf(total_sum,data[tap_offset<sp/><sp/>+<sp/>512]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>data[tap_offset]<sp/>=<sp/>total_sum;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>__syncthreads();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>if<sp/>((num_filter_taps<sp/>&gt;=<sp/>512)<sp/>&amp;&amp;<sp/>(filter_tap_num<sp/>&lt;<sp/>256))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>total_sum<sp/>=<sp/>cuCaddf(total_sum,data[tap_offset<sp/><sp/>+<sp/>256]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>data[tap_offset]<sp/>=<sp/>total_sum;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>__syncthreads();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>if<sp/>((num_filter_taps<sp/>&gt;=<sp/>256)<sp/>&amp;&amp;<sp/>(filter_tap_num<sp/>&lt;<sp/>128))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>total_sum<sp/>=<sp/>cuCaddf(total_sum,<sp/>data[tap_offset<sp/>+<sp/>128]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>data[tap_offset]<sp/>=<sp/>total_sum;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>__syncthreads();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>if<sp/>((num_filter_taps<sp/>&gt;=<sp/>128)<sp/>&amp;&amp;<sp/>(filter_tap_num<sp/>&lt;<sp/><sp/>64))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>total_sum<sp/>=<sp/>cuCaddf(total_sum,<sp/>data[tap_offset<sp/><sp/>+<sp/><sp/>64]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>data[tap_offset]<sp/>=<sp/>total_sum;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>__syncthreads();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>if<sp/>(<sp/>filter_tap_num<sp/>&lt;<sp/>32<sp/>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>Fetch<sp/>final<sp/>intermediate<sp/>sum<sp/>from<sp/>2nd<sp/>warp</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>if<sp/>(num_filter_taps<sp/>&gt;=<sp/><sp/>64)<sp/>total_sum<sp/>=<sp/>cuCaddf(total_sum,<sp/>data[tap_offset<sp/>+<sp/>32]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>Reduce<sp/>final<sp/>warp<sp/>using<sp/>shuffle</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>http://docs.nvidia.com/cuda/cuda-c-programming-guide/#built-in-variables</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>__shfl_down<sp/>is<sp/>used<sp/>an<sp/>optimization<sp/>in<sp/>the<sp/>final<sp/>warp<sp/>to<sp/>simulatenously<sp/>move</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>values<sp/>from<sp/>upper<sp/>threads<sp/>to<sp/>lower<sp/>threads<sp/>without<sp/>needing<sp/>__syncthreads().</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>for<sp/>(int<sp/>offset<sp/>=<sp/>warpSize/2;<sp/>offset<sp/>&gt;<sp/>0;<sp/>offset<sp/>/=<sp/>2)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>total_sum<sp/>=<sp/>cuCaddf(total_sum,__shfl_down(total_sum,<sp/>offset));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>return<sp/>total_sum;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Performs<sp/>decimation<sp/>using<sp/>bandpass<sp/>filters<sp/>on<sp/>a<sp/>set<sp/>of<sp/>input<sp/>RF<sp/>samples<sp/>if<sp/>the<sp/>total</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>number<sp/>of<sp/>filter<sp/>taps<sp/>for<sp/>all<sp/>filters<sp/>is<sp/>less<sp/>than<sp/>1024.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>original_samples<sp/><sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>original<sp/>input<sp/>samples<sp/>from<sp/>each<sp/>antenna<sp/>to</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>decimate.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>decimated_samples<sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>a<sp/>buffer<sp/>to<sp/>place<sp/>output<sp/>samples<sp/>for<sp/>each</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>frequency<sp/>after<sp/>decimation.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>filter_taps<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>one<sp/>or<sp/>more<sp/>filters<sp/>needed<sp/>for<sp/>each<sp/>frequency.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>dm_rate<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Decimation<sp/>rate.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>samples_per_antenna<sp/><sp/>The<sp/>number<sp/>of<sp/>samples<sp/>per<sp/>antenna<sp/>in<sp/>the<sp/>original<sp/>set<sp/>of</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>samples.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>This<sp/>function<sp/>performs<sp/>a<sp/>parallel<sp/>version<sp/>of<sp/>filtering+downsampling<sp/>on<sp/>the<sp/>GPU<sp/>to<sp/>be<sp/>able</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>process<sp/>data<sp/>in<sp/>realtime.<sp/>This<sp/>algorithm<sp/>will<sp/>use<sp/>1<sp/>GPU<sp/>thread<sp/>per<sp/>filter<sp/>tap<sp/>if<sp/>there<sp/>are<sp/>less</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>than<sp/>1024<sp/>taps<sp/>for<sp/>all<sp/>filters<sp/>combined.<sp/>Only<sp/>works<sp/>with<sp/>power<sp/>of<sp/>two<sp/>length<sp/>filters,<sp/>or<sp/>a</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>filter<sp/>that<sp/>is<sp/>zero<sp/>padded<sp/>to<sp/>a<sp/>power<sp/>of<sp/>two<sp/>in<sp/>length.<sp/>This<sp/>algorithm<sp/>takes</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>a<sp/>single<sp/>set<sp/>of<sp/>wide<sp/>band<sp/>samples<sp/>from<sp/>the<sp/>USRP<sp/>driver,<sp/>and<sp/>produces<sp/>an<sp/>output<sp/>data<sp/>set<sp/>for<sp/>each<sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>RX<sp/>frequency</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>gridDim.x<sp/>-<sp/>Total<sp/>number<sp/>of<sp/>output<sp/>samples<sp/>there<sp/>will<sp/>be<sp/>after<sp/>decimation.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>gridDim.y<sp/>-<sp/>Total<sp/>number<sp/>of<sp/>antennas.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>blockIdx.x<sp/>-<sp/>Decimated<sp/>output<sp/>sample<sp/>index.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>blockIdx.y<sp/>-<sp/>Antenna<sp/>index.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>blockDim.x<sp/>-<sp/>Number<sp/>of<sp/>filter<sp/>taps<sp/>in<sp/>the<sp/>lowpass<sp/>filter.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>blockDim.y<sp/>-<sp/>Total<sp/>number<sp/>of<sp/>filters.<sp/>Corresponds<sp/>to<sp/>total<sp/>receive<sp/>frequencies.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>threadIdx.x<sp/>-<sp/>Filter<sp/>tap<sp/>index.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>threadIdx.y<sp/>-<sp/>Filter<sp/>index.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">__global__<sp/>void<sp/>bandpass_decimate1024(cuComplex*<sp/>original_samples,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cuComplex*<sp/>decimated_samples,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cuComplex*<sp/>filter_taps,<sp/>uint32_t<sp/>dm_rate,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>uint32_t<sp/>samples_per_antenna)<sp/>{</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>Since<sp/>number<sp/>of<sp/>filter<sp/>taps<sp/>is<sp/>calculated<sp/>at<sp/>runtime<sp/>and<sp/>we<sp/>do<sp/>not<sp/>want<sp/>to<sp/>hardcode</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>values,<sp/>the<sp/>shared<sp/>memory<sp/>can<sp/>be<sp/>dynamically<sp/>initialized<sp/>at<sp/>invocation<sp/>of<sp/>the<sp/>kernel.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#shared</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>extern<sp/>__shared__<sp/>cuComplex<sp/>filter_products[];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>antenna_num<sp/>=<sp/>blockIdx.y;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>antenna_offset<sp/>=<sp/>antenna_num<sp/>*<sp/>samples_per_antenna;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>dec_sample_num<sp/>=<sp/>blockIdx.x;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>dec_sample_offset<sp/>=<sp/>dec_sample_num<sp/>*<sp/>dm_rate;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>tap_offset<sp/>=<sp/>threadIdx.y<sp/>*<sp/>blockDim.x<sp/>+<sp/>threadIdx.x;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>If<sp/>an<sp/>offset<sp/>should<sp/>extend<sp/>past<sp/>the<sp/>length<sp/>of<sp/>samples<sp/>per<sp/>antenna</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>then<sp/>zeroes<sp/>are<sp/>used<sp/>as<sp/>to<sp/>not<sp/>segfault<sp/>or<sp/>run<sp/>into<sp/>the<sp/>next<sp/>buffer.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>output<sp/>samples<sp/>convolved<sp/>with<sp/>these<sp/>zeroes<sp/>will<sp/>be<sp/>discarded<sp/>after</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>the<sp/>complete<sp/>process<sp/>as<sp/>to<sp/>not<sp/>introduce<sp/>edge<sp/>effects.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cuComplex<sp/>sample;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>if<sp/>((dec_sample_offset<sp/>+<sp/>threadIdx.x)<sp/>&gt;=<sp/>samples_per_antenna)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sample<sp/>=<sp/>make_cuComplex(0.0f,0.0f);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>else<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>final_offset<sp/>=<sp/>antenna_offset<sp/>+<sp/>dec_sample_offset<sp/>+<sp/>threadIdx.x;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sample<sp/>=<sp/>original_samples[final_offset];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>filter_products[tap_offset]<sp/>=<sp/>cuCmulf(sample,filter_taps[tap_offset]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>Synchronizes<sp/>all<sp/>threads<sp/>in<sp/>a<sp/>block,<sp/>meaning<sp/>1<sp/>output<sp/>sample<sp/>per<sp/>rx<sp/>freq</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>is<sp/>ready<sp/>to<sp/>be<sp/>calculated<sp/>with<sp/>the<sp/>parallel<sp/>reduce</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>__syncthreads();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>calculated_output_sample<sp/>=<sp/>parallel_reduce(filter_products,<sp/>tap_offset);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>When<sp/>decimating,<sp/>we<sp/>go<sp/>from<sp/>one<sp/>set<sp/>of<sp/>samples<sp/>for<sp/>each<sp/>antenna</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>to<sp/>multiple<sp/>sets<sp/>of<sp/>reduced<sp/>samples<sp/>for<sp/>each<sp/>frequency.<sp/>Output<sp/>samples<sp/>are</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>grouped<sp/>by<sp/>frequency<sp/>with<sp/>all<sp/>samples<sp/>for<sp/>each<sp/>antenna<sp/>following<sp/>each<sp/>other</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>before<sp/>samples<sp/>of<sp/>another<sp/>frequency<sp/>start.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>if<sp/>(threadIdx.x<sp/>==<sp/>0)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>antenna_offset<sp/>=<sp/>antenna_num<sp/>*<sp/>gridDim.x;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>total_antennas<sp/>=<sp/>gridDim.y;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>freq_offset<sp/>=<sp/>threadIdx.y<sp/>*<sp/>gridDim.x<sp/>*<sp/>total_antennas;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>total_offset<sp/>=<sp/>freq_offset<sp/>+<sp/>antenna_offset<sp/>+<sp/>dec_sample_num;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>decimated_samples[total_offset]<sp/>=<sp/>calculated_output_sample;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Performs<sp/>decimation<sp/>using<sp/>bandpass<sp/>filters<sp/>on<sp/>a<sp/>set<sp/>of<sp/>input<sp/>RF<sp/>samples<sp/>if<sp/>the<sp/>total<sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>number<sp/>of<sp/>filter<sp/>taps<sp/>for<sp/>all<sp/>filters<sp/>is<sp/>less<sp/>than<sp/>2048.<sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>original_samples<sp/><sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>original<sp/>input<sp/>samples<sp/>from<sp/>each<sp/>antenna<sp/>to</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>decimate.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>decimated_samples<sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>a<sp/>buffer<sp/>to<sp/>place<sp/>output<sp/>samples<sp/>for<sp/>each<sp/>frequency</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>after<sp/>decimation.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>filter_taps<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>one<sp/>or<sp/>more<sp/>filters<sp/>needed<sp/>for<sp/>each<sp/>frequency.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>dm_rate<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Decimation<sp/>rate.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>samples_per_antenna<sp/><sp/>The<sp/>number<sp/>of<sp/>samples<sp/>per<sp/>antenna<sp/>in<sp/>the<sp/>original<sp/>set<sp/>of</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>samples.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>This<sp/>function<sp/>performs<sp/>a<sp/>parallel<sp/>version<sp/>of<sp/>filtering+downsampling<sp/>on<sp/>the<sp/>GPU<sp/>to<sp/>be<sp/>able<sp/>process</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>data<sp/>in<sp/>realtime.<sp/>This<sp/>algorithm<sp/>will<sp/>use<sp/>1<sp/>GPU<sp/>thread<sp/>to<sp/>process<sp/>two<sp/>filter<sp/>taps<sp/>if<sp/>there<sp/>are</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>less<sp/>than<sp/>2048<sp/>taps<sp/>for<sp/>all<sp/>filters<sp/>combined.<sp/>Intended<sp/>to<sp/>be<sp/>used<sp/>if<sp/>there<sp/>are<sp/>more<sp/>than<sp/>1024</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>total<sp/>threads,<sp/>as<sp/>that<sp/>is<sp/>the<sp/>max<sp/>block<sp/>size<sp/>possible<sp/>for<sp/>CUDA.<sp/>Only<sp/>works<sp/>with<sp/>power<sp/>of<sp/>two</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>length<sp/>filters,<sp/>or<sp/>a<sp/>filter<sp/>that<sp/>is<sp/>zero<sp/>padded<sp/>to<sp/>a<sp/>power<sp/>of<sp/>two<sp/>in<sp/>length.<sp/>This<sp/>algorithm<sp/>takes</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>a<sp/>single<sp/>set<sp/>of<sp/>wide<sp/>band<sp/>samples<sp/>from<sp/>the<sp/>USRP<sp/>driver,<sp/>and<sp/>produces<sp/>a<sp/>output<sp/>data<sp/>set<sp/>for<sp/>each<sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>RX<sp/>frequency.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>gridDim.x<sp/>-<sp/>Total<sp/>number<sp/>of<sp/>output<sp/>samples<sp/>there<sp/>will<sp/>be<sp/>after<sp/>decimation.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>gridDim.y<sp/>-<sp/>Total<sp/>number<sp/>of<sp/>antennas.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>blockIdx.x<sp/>-<sp/>Decimated<sp/>output<sp/>sample<sp/>index.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>blockIdx.y<sp/>-<sp/>Antenna<sp/>index.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>blockDim.x<sp/>-<sp/>Number<sp/>of<sp/>filter<sp/>taps<sp/>in<sp/>each<sp/>filter<sp/>/<sp/>2.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>blockDim.y<sp/>-<sp/>Total<sp/>number<sp/>of<sp/>filters.<sp/>Corresponds<sp/>to<sp/>total<sp/>receive<sp/>frequencies.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>threadIdx.x<sp/>-<sp/>Every<sp/>second<sp/>filter<sp/>tap<sp/>index.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>threadIdx.y<sp/>-<sp/>Filter<sp/>index.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">__global__<sp/>void<sp/>bandpass_decimate2048(cuComplex*<sp/>original_samples,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cuComplex*<sp/>decimated_samples,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cuComplex*<sp/>filter_taps,<sp/>uint32_t<sp/>dm_rate,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>uint32_t<sp/>samples_per_antenna)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>Since<sp/>number<sp/>of<sp/>filter<sp/>taps<sp/>is<sp/>calculated<sp/>at<sp/>runtime<sp/>and<sp/>we<sp/>do<sp/>not<sp/>want<sp/>to<sp/>hardcode</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>values,<sp/>the<sp/>shared<sp/>memory<sp/>can<sp/>be<sp/>dynamically<sp/>initialized<sp/>at<sp/>invocation<sp/>of<sp/>the<sp/>kernel.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#shared</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>extern<sp/>__shared__<sp/>cuComplex<sp/>filter_products[];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>antenna_num<sp/>=<sp/>blockIdx.y;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>antenna_offset<sp/>=<sp/>antenna_num<sp/>*<sp/>samples_per_antenna;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>dec_sample_num<sp/>=<sp/>blockIdx.x;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>dec_sample_offset<sp/>=<sp/>dec_sample_num<sp/>*<sp/>dm_rate;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>tap_offset<sp/>=<sp/>threadIdx.y<sp/>*<sp/>blockDim.x<sp/>+<sp/>2<sp/>*<sp/>threadIdx.x;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cuComplex<sp/>sample_1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cuComplex<sp/>sample_2;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>If<sp/>an<sp/>offset<sp/>should<sp/>extend<sp/>past<sp/>the<sp/>length<sp/>of<sp/>samples<sp/>per<sp/>antenna</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>then<sp/>zeroes<sp/>are<sp/>used<sp/>as<sp/>to<sp/>not<sp/>segfault<sp/>or<sp/>run<sp/>into<sp/>the<sp/>next<sp/>buffer.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>output<sp/>samples<sp/>convolved<sp/>with<sp/>these<sp/>zeroes<sp/>will<sp/>be<sp/>discarded<sp/>after</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>the<sp/>complete<sp/>process<sp/>as<sp/>to<sp/>not<sp/>introduce<sp/>edge<sp/>effects.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>if<sp/>((dec_sample_offset<sp/>+<sp/>2<sp/>*<sp/>threadIdx.x)<sp/>&gt;=<sp/>samples_per_antenna)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>the<sp/>case<sp/>both<sp/>samples<sp/>are<sp/>out<sp/>of<sp/>bounds</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sample_1<sp/>=<sp/>make_cuComplex(0.0,0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sample_2<sp/>=<sp/>make_cuComplex(0.0,0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>else<sp/>if<sp/>((dec_sample_offset<sp/>+<sp/>2<sp/>*<sp/>threadIdx.x)<sp/>&gt;=<sp/>samples_per_antenna<sp/>-<sp/>1)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>the<sp/>case<sp/>only<sp/>one<sp/>sample<sp/>would<sp/>be<sp/>out<sp/>of<sp/>bounds</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>final_offset<sp/>=<sp/>antenna_offset<sp/>+<sp/>dec_sample_offset<sp/>+<sp/>2*threadIdx.x;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sample_1<sp/>=<sp/>original_samples[final_offset];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sample_2<sp/>=<sp/>make_cuComplex(0.0,0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>else<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>final_offset<sp/>=<sp/>antenna_offset<sp/>+<sp/>dec_sample_offset<sp/>+<sp/>2*threadIdx.x;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sample_1<sp/>=<sp/>original_samples[final_offset];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sample_2<sp/>=<sp/>original_samples[final_offset+1];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>filter_products[tap_offset]<sp/>=<sp/>cuCmulf(sample_1,filter_taps[tap_offset]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>filter_products[tap_offset+1]<sp/>=<sp/>cuCmulf(sample_2,<sp/>filter_taps[tap_offset+1]);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>An<sp/>additional<sp/>add<sp/>must<sp/>happen<sp/>first<sp/>in<sp/>this<sp/>case<sp/>since<sp/>the<sp/>parallel<sp/>reduce<sp/>will<sp/>only</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>run<sp/>on<sp/>even<sp/>data<sp/>indices.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>filter_products[tap_offset]<sp/>=<sp/>cuCaddf(filter_products[tap_offset],filter_products[tap_offset+1]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>__syncthreads();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>calculated_output_sample<sp/>=<sp/>parallel_reduce(filter_products,<sp/>tap_offset);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>When<sp/>decimating,<sp/>we<sp/>go<sp/>from<sp/>one<sp/>set<sp/>of<sp/>samples<sp/>for<sp/>each<sp/>antenna</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>to<sp/>multiple<sp/>sets<sp/>of<sp/>reduced<sp/>samples<sp/>for<sp/>each<sp/>frequency.<sp/>Output<sp/>samples<sp/>are</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>grouped<sp/>by<sp/>frequency<sp/>with<sp/>all<sp/>samples<sp/>for<sp/>each<sp/>antenna<sp/>following<sp/>each<sp/>other</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>before<sp/>samples<sp/>of<sp/>another<sp/>frequency<sp/>start.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>if<sp/>(threadIdx.x<sp/>==<sp/>0)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>antenna_offset<sp/>=<sp/>antenna_num<sp/>*<sp/>gridDim.x;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>total_antennas<sp/>=<sp/>gridDim.y;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>freq_offset<sp/>=<sp/>threadIdx.y<sp/>*<sp/>gridDim.x<sp/>*<sp/>total_antennas;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>total_offset<sp/>=<sp/>freq_offset<sp/>+<sp/>antenna_offset<sp/>+<sp/>dec_sample_num;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>decimated_samples[total_offset]<sp/>=<sp/>calculated_output_sample;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>This<sp/>function<sp/>wraps<sp/>the<sp/>bandpass_decimate1024<sp/>kernel<sp/>so<sp/>that<sp/>it<sp/>can<sp/>be<sp/>called<sp/>from<sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>another<sp/>file.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>original_samples<sp/><sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>original<sp/>input<sp/>samples<sp/>from<sp/>each<sp/>antenna<sp/>to</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>decimate.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>decimated_samples<sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>a<sp/>buffer<sp/>to<sp/>place<sp/>output<sp/>samples<sp/>for<sp/>each<sp/>frequency</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>after<sp/>decimation.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>filter_taps<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>one<sp/>or<sp/>more<sp/>filters<sp/>needed<sp/>for<sp/>each<sp/>frequency.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>dm_rate<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Decimation<sp/>rate.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>samples_per_antenna<sp/><sp/>The<sp/>number<sp/>of<sp/>samples<sp/>per<sp/>antenna<sp/>in<sp/>the<sp/>original<sp/>set<sp/>of</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>samples.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>num_taps_per_filter<sp/><sp/>Number<sp/>of<sp/>taps<sp/>per<sp/>filter.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>num_freqs<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Number<sp/>of<sp/>receive<sp/>frequencies.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>num_antennas<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Number<sp/>of<sp/>antennas<sp/>for<sp/>which<sp/>there<sp/>are<sp/>samples.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>stream<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CUDA<sp/>stream<sp/>with<sp/>which<sp/>to<sp/>associate<sp/>the<sp/>invocation<sp/>of<sp/>the</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>kernel.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">void<sp/>bandpass_decimate1024_wrapper(cuComplex*<sp/>original_samples,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cuComplex*<sp/>decimated_samples,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cuComplex*<sp/>filter_taps,<sp/>uint32_t<sp/>dm_rate,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>uint32_t<sp/>samples_per_antenna,<sp/>uint32_t<sp/>num_taps_per_filter,<sp/>uint32_t<sp/>num_freqs,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>uint32_t<sp/>num_antennas,<sp/>cudaStream_t<sp/>stream)<sp/>{</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//Allocate<sp/>shared<sp/>memory<sp/>on<sp/>device<sp/>for<sp/>all<sp/>filter<sp/>taps.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>shr_mem_taps<sp/>=<sp/>num_freqs<sp/>*<sp/>num_taps_per_filter<sp/>*<sp/>sizeof(cuComplex);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/><sp/><sp/>Number<sp/>of<sp/>shared<sp/>memory<sp/>bytes:<sp/>&quot;&lt;&lt;<sp/>shr_mem_taps<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>dimGrid<sp/>=<sp/>create_bandpass_grid(samples_per_antenna,<sp/>dm_rate,<sp/>num_antennas);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>dimBlock<sp/>=<sp/>create_bandpass_block(num_taps_per_filter,num_freqs);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>bandpass_decimate1024&lt;&lt;&lt;dimGrid,dimBlock,shr_mem_taps,stream&gt;&gt;&gt;(original_samples,<sp/>decimated_samples,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>filter_taps,<sp/>dm_rate,<sp/>samples_per_antenna);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>This<sp/>function<sp/>wraps<sp/>the<sp/>bandpass_decimate2048<sp/>kernel<sp/>so<sp/>that<sp/>it<sp/>can<sp/>be<sp/>called<sp/>from<sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>another<sp/>file.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>original_samples<sp/><sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>original<sp/>input<sp/>samples<sp/>from<sp/>each<sp/>antenna<sp/>to</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>decimate.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>decimated_samples<sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>a<sp/>buffer<sp/>to<sp/>place<sp/>output<sp/>samples<sp/>for<sp/>each<sp/>frequency</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>after<sp/>decimation.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>filter_taps<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>one<sp/>or<sp/>more<sp/>filters<sp/>needed<sp/>for<sp/>each<sp/>frequency.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>dm_rate<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Decimation<sp/>rate.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>samples_per_antenna<sp/><sp/>The<sp/>number<sp/>of<sp/>samples<sp/>per<sp/>antenna<sp/>in<sp/>the<sp/>original<sp/>set<sp/>of</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>samples.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>num_taps_per_filter<sp/><sp/>Number<sp/>of<sp/>taps<sp/>per<sp/>filter.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>num_freqs<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Number<sp/>of<sp/>receive<sp/>frequencies.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>num_antennas<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Number<sp/>of<sp/>antennas<sp/>for<sp/>which<sp/>there<sp/>are<sp/>samples.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>stream<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CUDA<sp/>stream<sp/>with<sp/>which<sp/>to<sp/>associate<sp/>the<sp/>invocation<sp/>of<sp/>the</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>kernel.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">void<sp/>bandpass_decimate2048_wrapper(cuComplex*<sp/>original_samples,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cuComplex*<sp/>decimated_samples,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cuComplex*<sp/>filter_taps,<sp/>uint32_t<sp/>dm_rate,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>uint32_t<sp/>samples_per_antenna,<sp/>uint32_t<sp/>num_taps_per_filter,<sp/>uint32_t<sp/>num_freqs,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>uint32_t<sp/>num_antennas,<sp/>cudaStream_t<sp/>stream)<sp/>{</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//Allocate<sp/>shared<sp/>memory<sp/>on<sp/>device<sp/>for<sp/>all<sp/>filter<sp/>taps.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>shr_mem_taps<sp/>=<sp/>num_freqs<sp/>*<sp/>num_taps_per_filter<sp/>*<sp/>sizeof(cuComplex);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/><sp/><sp/>Number<sp/>of<sp/>shared<sp/>memory<sp/>bytes:<sp/>&quot;&lt;&lt;<sp/>shr_mem_taps<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>dimGrid<sp/>=<sp/>create_bandpass_grid(samples_per_antenna,<sp/>dm_rate,<sp/>num_antennas);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>dimBlock<sp/>=<sp/>create_bandpass_block(num_taps_per_filter/2,<sp/>num_freqs);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>bandpass_decimate2048&lt;&lt;&lt;dimGrid,dimBlock,shr_mem_taps,stream&gt;&gt;&gt;(original_samples,<sp/>decimated_samples,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>filter_taps,<sp/>dm_rate,<sp/>samples_per_antenna);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Performs<sp/>decimation<sp/>using<sp/>a<sp/>lowpass<sp/>filter<sp/>on<sp/>one<sp/>or<sp/>more<sp/>sets<sp/>of<sp/>baseband<sp/>samples<sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>corresponding<sp/>to<sp/>each<sp/>RX<sp/>frequency.<sp/>This<sp/>algorithm<sp/>works<sp/>on<sp/>filters<sp/>with<sp/>less<sp/>that<sp/>1024<sp/>taps.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>original_samples<sp/><sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>input<sp/>samples<sp/>for<sp/>one<sp/>or<sp/>more<sp/>baseband<sp/>datasets.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>decimated_samples<sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>a<sp/>buffer<sp/>to<sp/>place<sp/>output<sp/>samples<sp/>for<sp/>each<sp/>frequency</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>dataset<sp/>after<sp/>decimation.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>filter_taps<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>a<sp/>lowpass<sp/>filter<sp/>used<sp/>for<sp/>further<sp/>decimation.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>dm_rate<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Decimation<sp/>rate.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>samples_per_antenna<sp/><sp/>The<sp/>number<sp/>of<sp/>samples<sp/>per<sp/>antenna<sp/>in<sp/>the<sp/>original<sp/>set<sp/>of</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>samples.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>This<sp/>function<sp/>performs<sp/>a<sp/>parallel<sp/>version<sp/>of<sp/>filtering+downsampling<sp/>on<sp/>the<sp/>GPU<sp/>to<sp/>be<sp/>able</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>process<sp/>data<sp/>in<sp/>realtime.<sp/>This<sp/>algorithm<sp/>will<sp/>use<sp/>1<sp/>GPU<sp/>thread<sp/>per<sp/>filter<sp/>tap<sp/>if<sp/>there<sp/>are<sp/>less</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>than<sp/>1024<sp/>taps<sp/>for<sp/>all<sp/>filters<sp/>combined.<sp/>Only<sp/>works<sp/>with<sp/>power<sp/>of<sp/>two<sp/>length<sp/>filters,<sp/>or<sp/>a</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>filter<sp/>that<sp/>is<sp/>zero<sp/>padded<sp/>to<sp/>a<sp/>power<sp/>of<sp/>two<sp/>in<sp/>length.<sp/>This<sp/>algorithm<sp/>takes<sp/>one<sp/>or<sp/>more<sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>baseband<sp/>datasets<sp/>corresponding<sp/>to<sp/>each<sp/>RX<sp/>frequency<sp/>and<sp/>filters<sp/>each<sp/>one<sp/>using<sp/>a<sp/>single<sp/>lowpass</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>filter<sp/>before<sp/>downsampling.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>gridDim.x<sp/>-<sp/>The<sp/>number<sp/>of<sp/>decimated<sp/>output<sp/>samples<sp/>for<sp/>one<sp/>antenna<sp/>in<sp/>one<sp/>frequency<sp/>data<sp/>set.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>gridDim.y<sp/>-<sp/>Total<sp/>number<sp/>of<sp/>antennas.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>gridDim.z<sp/>-<sp/>Total<sp/>number<sp/>of<sp/>frequency<sp/>data<sp/>sets.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>blockIdx.x<sp/>-<sp/>Decimated<sp/>output<sp/>sample<sp/>index.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>blockIdx.y<sp/>-<sp/>Antenna<sp/>index.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>blockIdx.z<sp/>-<sp/>Frequency<sp/>dataset<sp/>index.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>blockDim.x<sp/>-<sp/>Number<sp/>of<sp/>filter<sp/>taps<sp/>in<sp/>the<sp/>lowpass<sp/>filter.</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>threadIdx.x<sp/>-<sp/>Filter<sp/>tap<sp/>indices.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">__global__<sp/>void<sp/>lowpass_decimate1024(cuComplex*<sp/>original_samples,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cuComplex*<sp/>decimated_samples,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cuComplex*<sp/>filter_taps,<sp/>uint32_t<sp/>dm_rate,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>uint32_t<sp/>samples_per_antenna)<sp/>{</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>Since<sp/>number<sp/>of<sp/>filter<sp/>taps<sp/>is<sp/>calculated<sp/>at<sp/>runtime<sp/>and<sp/>we<sp/>do<sp/>not<sp/>want<sp/>to<sp/>hardcode</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>values,<sp/>the<sp/>shared<sp/>memory<sp/>can<sp/>be<sp/>dynamically<sp/>initialized<sp/>at<sp/>invocation<sp/>of<sp/>the<sp/>kernel.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#shared</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>extern<sp/>__shared__<sp/>cuComplex<sp/>filter_products[];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>total_antennas<sp/>=<sp/>gridDim.y;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>data_set_idx<sp/>=<sp/>blockIdx.z;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>frequency_dataset_offset<sp/>=<sp/>data_set_idx<sp/>*<sp/>samples_per_antenna<sp/>*<sp/>total_antennas;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>antenna_num<sp/>=<sp/>blockIdx.y;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>antenna_offset<sp/>=<sp/>antenna_num<sp/>*<sp/>samples_per_antenna;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>dec_sample_num<sp/>=<sp/>blockIdx.x;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>dec_sample_offset<sp/>=<sp/>dec_sample_num<sp/>*<sp/>dm_rate;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>tap_offset<sp/>=<sp/>threadIdx.x;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>If<sp/>an<sp/>offset<sp/>should<sp/>extend<sp/>past<sp/>the<sp/>length<sp/>of<sp/>samples<sp/>per<sp/>antenna</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>then<sp/>zeroes<sp/>are<sp/>used<sp/>as<sp/>to<sp/>not<sp/>segfault<sp/>or<sp/>run<sp/>into<sp/>the<sp/>next<sp/>buffer.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>output<sp/>samples<sp/>convolved<sp/>with<sp/>these<sp/>zeroes<sp/>will<sp/>be<sp/>discarded<sp/>after</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>the<sp/>complete<sp/>process<sp/>as<sp/>to<sp/>not<sp/>introduce<sp/>edge<sp/>effects.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cuComplex<sp/>sample;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>if<sp/>((dec_sample_offset<sp/>+<sp/>tap_offset)<sp/>&gt;=<sp/>samples_per_antenna)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sample<sp/>=<sp/>make_cuComplex(0.0f,0.0f);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>else<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>final_offset<sp/>=<sp/>frequency_dataset_offset<sp/>+<sp/>antenna_offset<sp/>+<sp/>dec_sample_offset<sp/>+<sp/>tap_offset;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sample<sp/>=<sp/>original_samples[final_offset];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>filter_products[tap_offset]<sp/>=<sp/>cuCmulf(sample,filter_taps[tap_offset]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>Synchronizes<sp/>all<sp/>threads<sp/>in<sp/>a<sp/>block,<sp/>meaning<sp/>1<sp/>output<sp/>sample<sp/>per<sp/>rx<sp/>freq</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>is<sp/>ready<sp/>to<sp/>be<sp/>calculated<sp/>with<sp/>the<sp/>parallel<sp/>reduce</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>__syncthreads();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>calculated_output_sample<sp/>=<sp/>parallel_reduce(filter_products,<sp/>tap_offset);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>When<sp/>decimating,<sp/>we<sp/>go<sp/>from<sp/>one<sp/>set<sp/>of<sp/>samples<sp/>for<sp/>each<sp/>antenna</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>to<sp/>multiple<sp/>sets<sp/>of<sp/>reduced<sp/>samples<sp/>for<sp/>each<sp/>frequency.<sp/>Output<sp/>samples<sp/>are</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>grouped<sp/>by<sp/>frequency<sp/>with<sp/>all<sp/>samples<sp/>for<sp/>each<sp/>antenna<sp/>following<sp/>each<sp/>other</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>before<sp/>samples<sp/>of<sp/>another<sp/>frequency<sp/>start.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>if<sp/>(threadIdx.x<sp/>==<sp/>0)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>num_output_samples_per_antenna<sp/>=<sp/>gridDim.x;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>frequency_dataset_offset<sp/>=<sp/>data_set_idx<sp/>*<sp/>num_output_samples_per_antenna<sp/>*<sp/>total_antennas;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>antenna_offset<sp/>=<sp/>antenna_num<sp/>*<sp/>num_output_samples_per_antenna;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>total_offset<sp/>=<sp/>frequency_dataset_offset<sp/>+<sp/>antenna_offset<sp/>+<sp/>dec_sample_num;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>decimated_samples[total_offset]<sp/>=<sp/>calculated_output_sample;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Performs<sp/>decimation<sp/>using<sp/>a<sp/>lowpass<sp/>filter<sp/>on<sp/>one<sp/>or<sp/>more<sp/>sets<sp/>of<sp/>baseband<sp/>samples<sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>corresponding<sp/>to<sp/>each<sp/>RX<sp/>frequency.<sp/>This<sp/>algorithm<sp/>works<sp/>on<sp/>filters<sp/>with<sp/>less<sp/>that<sp/>2048<sp/>taps.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>original_samples<sp/><sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>input<sp/>samples<sp/>for<sp/>one<sp/>or<sp/>more<sp/>baseband<sp/>datasets.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>decimated_samples<sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>a<sp/>buffer<sp/>to<sp/>place<sp/>output<sp/>samples<sp/>for<sp/>each<sp/>frequency</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>dataset<sp/>after<sp/>decimation.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>filter_taps<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>a<sp/>lowpass<sp/>filter<sp/>used<sp/>for<sp/>further<sp/>decimation.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>dm_rate<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Decimation<sp/>rate.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>samples_per_antenna<sp/><sp/>The<sp/>number<sp/>of<sp/>samples<sp/>per<sp/>antenna<sp/>in<sp/>the<sp/>original<sp/>set<sp/>of</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>samples.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>This<sp/>function<sp/>performs<sp/>a<sp/>parallel<sp/>version<sp/>of<sp/>filtering+downsampling<sp/>on<sp/>the<sp/>GPU<sp/>to<sp/>be<sp/>able<sp/>process</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>data<sp/>in<sp/>realtime.<sp/>This<sp/>algorithm<sp/>will<sp/>use<sp/>1<sp/>GPU<sp/>thread<sp/>to<sp/>process<sp/>two<sp/>filter<sp/>taps<sp/>if<sp/>there<sp/>are</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>less<sp/>than<sp/>2048<sp/>taps<sp/>for<sp/>all<sp/>filters<sp/>combined.<sp/>Intended<sp/>to<sp/>be<sp/>used<sp/>if<sp/>there<sp/>are<sp/>more<sp/>than<sp/>1024</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>total<sp/>threads,<sp/>as<sp/>that<sp/>is<sp/>the<sp/>max<sp/>block<sp/>size<sp/>possible<sp/>for<sp/>CUDA.<sp/>Only<sp/>works<sp/>with<sp/>power<sp/>of<sp/>two</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>length<sp/>filters,<sp/>or<sp/>a<sp/>filter<sp/>that<sp/>is<sp/>zero<sp/>padded<sp/>to<sp/>a<sp/>power<sp/>of<sp/>two<sp/>in<sp/>length.<sp/>This<sp/>algorithm<sp/>takes</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>one<sp/>or<sp/>more<sp/>baseband<sp/>datasets<sp/>corresponding<sp/>to<sp/>each<sp/>RX<sp/>frequency<sp/>and<sp/>filters<sp/>each<sp/>one<sp/>using<sp/>a<sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>single<sp/>lowpass<sp/>filter<sp/>before<sp/>downsampling.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>gridDim.x<sp/>-<sp/>The<sp/>number<sp/>of<sp/>decimated<sp/>output<sp/>samples<sp/>for<sp/>one<sp/>antenna<sp/>in<sp/>one<sp/>frequency<sp/>data<sp/>set.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>gridDim.y<sp/>-<sp/>Total<sp/>number<sp/>of<sp/>antennas.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>gridDim.z<sp/>-<sp/>Total<sp/>number<sp/>of<sp/>frequency<sp/>data<sp/>sets.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>blockIdx.x<sp/>-<sp/>Decimated<sp/>output<sp/>sample<sp/>index.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>blockIdx.y<sp/>-<sp/>Antenna<sp/>index.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>blockIdx.z<sp/>-<sp/>Frequency<sp/>dataset<sp/>index.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>blockDim.x<sp/>-<sp/>Number<sp/>of<sp/>filter<sp/>taps<sp/>in<sp/>the<sp/>lowpass<sp/>filter<sp/>/<sp/>2.</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/>threadIdx.x<sp/>-<sp/>Every<sp/>second<sp/>filter<sp/>tap<sp/>index.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">__global__<sp/>void<sp/>lowpass_decimate2048(cuComplex*<sp/>original_samples,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cuComplex*<sp/>decimated_samples,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cuComplex*<sp/>filter_taps,<sp/>uint32_t<sp/>dm_rate,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>uint32_t<sp/>samples_per_antenna)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>Since<sp/>number<sp/>of<sp/>filter<sp/>taps<sp/>is<sp/>calculated<sp/>at<sp/>runtime<sp/>and<sp/>we<sp/>do<sp/>not<sp/>want<sp/>to<sp/>hardcode</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>values,<sp/>the<sp/>shared<sp/>memory<sp/>can<sp/>be<sp/>dynamically<sp/>initialized<sp/>at<sp/>invocation<sp/>of<sp/>the<sp/>kernel.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#shared</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>extern<sp/>__shared__<sp/>cuComplex<sp/>filter_products[];</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>total_antennas<sp/>=<sp/>gridDim.y;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>data_set_idx<sp/>=<sp/>blockIdx.z;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>frequency_dataset_offset<sp/>=<sp/>data_set_idx<sp/>*<sp/>samples_per_antenna<sp/>*<sp/>total_antennas;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>antenna_num<sp/>=<sp/>blockIdx.y;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>antenna_offset<sp/>=<sp/>antenna_num<sp/>*<sp/>samples_per_antenna;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>dec_sample_num<sp/>=<sp/>blockIdx.x;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>dec_sample_offset<sp/>=<sp/>dec_sample_num<sp/>*<sp/>dm_rate;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>tap_offset<sp/>=<sp/>2<sp/>*<sp/>threadIdx.x;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cuComplex<sp/>sample_1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cuComplex<sp/>sample_2;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>If<sp/>an<sp/>offset<sp/>should<sp/>extend<sp/>past<sp/>the<sp/>length<sp/>of<sp/>samples<sp/>per<sp/>antenna</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>then<sp/>zeroes<sp/>are<sp/>used<sp/>as<sp/>to<sp/>not<sp/>segfault<sp/>or<sp/>run<sp/>into<sp/>the<sp/>next<sp/>buffer.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>output<sp/>samples<sp/>convolved<sp/>with<sp/>these<sp/>zeroes<sp/>will<sp/>be<sp/>discarded<sp/>after</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>the<sp/>complete<sp/>process<sp/>as<sp/>to<sp/>not<sp/>introduce<sp/>edge<sp/>effects.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>if<sp/>((dec_sample_offset<sp/>+<sp/>2<sp/>*<sp/>threadIdx.x)<sp/>&gt;=<sp/>samples_per_antenna)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>the<sp/>case<sp/>both<sp/>samples<sp/>are<sp/>out<sp/>of<sp/>bounds</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sample_1<sp/>=<sp/>make_cuComplex(0.0,0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sample_2<sp/>=<sp/>make_cuComplex(0.0,0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>else<sp/>if<sp/>((dec_sample_offset<sp/>+<sp/>tap_offset)<sp/>&gt;=<sp/>samples_per_antenna<sp/>-<sp/>1)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>the<sp/>case<sp/>only<sp/>one<sp/>sample<sp/>would<sp/>be<sp/>out<sp/>of<sp/>bounds</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>final_offset<sp/>=<sp/>antenna_offset<sp/>+<sp/>dec_sample_offset<sp/>+<sp/>tap_offset;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sample_1<sp/>=<sp/>original_samples[final_offset];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sample_2<sp/>=<sp/>make_cuComplex(0.0,0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>else<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>final_offset<sp/>=<sp/>frequency_dataset_offset<sp/>+<sp/>antenna_offset<sp/>+<sp/>dec_sample_offset<sp/>+<sp/>tap_offset;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sample_1<sp/>=<sp/>original_samples[final_offset];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sample_2<sp/>=<sp/>original_samples[final_offset+1];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>filter_products[tap_offset]<sp/>=<sp/>cuCmulf(sample_1,filter_taps[tap_offset]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>filter_products[tap_offset+1]<sp/>=<sp/>cuCmulf(sample_2,<sp/>filter_taps[tap_offset+1]);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>An<sp/>additional<sp/>add<sp/>must<sp/>happen<sp/>first<sp/>in<sp/>this<sp/>case<sp/>since<sp/>the<sp/>parallel<sp/>reduce<sp/>will<sp/>only</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>run<sp/>on<sp/>even<sp/>data<sp/>indices.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>filter_products[tap_offset]<sp/>=<sp/>cuCaddf(filter_products[tap_offset],filter_products[tap_offset+1]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>__syncthreads();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>calculated_output_sample<sp/>=<sp/>parallel_reduce(filter_products,<sp/>tap_offset);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>When<sp/>decimating,<sp/>we<sp/>go<sp/>from<sp/>one<sp/>set<sp/>of<sp/>samples<sp/>for<sp/>each<sp/>antenna</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>to<sp/>multiple<sp/>sets<sp/>of<sp/>reduced<sp/>samples<sp/>for<sp/>each<sp/>frequency.<sp/>Output<sp/>samples<sp/>are</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>grouped<sp/>by<sp/>frequency<sp/>with<sp/>all<sp/>samples<sp/>for<sp/>each<sp/>antenna<sp/>following<sp/>each<sp/>other</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//<sp/>before<sp/>samples<sp/>of<sp/>another<sp/>frequency<sp/>start.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>if<sp/>(threadIdx.x<sp/>==<sp/>0)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>num_output_samples_per_antenna<sp/>=<sp/>gridDim.x;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>frequency_dataset_offset<sp/>=<sp/>data_set_idx<sp/>*<sp/>num_output_samples_per_antenna<sp/>*<sp/>total_antennas;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>antenna_offset<sp/>=<sp/>antenna_num<sp/>*<sp/>num_output_samples_per_antenna;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>total_offset<sp/>=<sp/>frequency_dataset_offset<sp/>+<sp/>antenna_offset<sp/>+<sp/>dec_sample_num;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>decimated_samples[total_offset]<sp/>=<sp/>calculated_output_sample;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>This<sp/>function<sp/>wraps<sp/>the<sp/>lowpass_decimate1024<sp/>kernel<sp/>so<sp/>that<sp/>it<sp/>can<sp/>be<sp/>called<sp/>from<sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>another<sp/>file.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>original_samples<sp/><sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>one<sp/>or<sp/>more<sp/>baseband<sp/>frequency<sp/>datasets.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>decimated_samples<sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>a<sp/>buffer<sp/>to<sp/>place<sp/>output<sp/>samples<sp/>for<sp/>each<sp/>frequency</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>after<sp/>decimation.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>filter_taps<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>one<sp/>lowpass<sp/>filter.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>dm_rate<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Decimation<sp/>rate.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>samples_per_antenna<sp/><sp/>The<sp/>number<sp/>of<sp/>samples<sp/>per<sp/>antenna<sp/>in<sp/>each<sp/>data<sp/>set.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>num_taps_per_filter<sp/><sp/>Number<sp/>of<sp/>taps<sp/>per<sp/>filter.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>num_freqs<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Number<sp/>of<sp/>receive<sp/>frequency<sp/>datasets.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>num_antennas<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Number<sp/>of<sp/>antennas<sp/>for<sp/>which<sp/>there<sp/>are<sp/>samples.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>stream<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CUDA<sp/>stream<sp/>with<sp/>which<sp/>to<sp/>associate<sp/>the<sp/>invocation<sp/>of<sp/>the</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>kernel.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">void<sp/>lowpass_decimate1024_wrapper(cuComplex*<sp/>original_samples,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cuComplex*<sp/>decimated_samples,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cuComplex*<sp/>filter_taps,<sp/>uint32_t<sp/>dm_rate,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>uint32_t<sp/>samples_per_antenna,<sp/>uint32_t<sp/>num_taps_per_filter,<sp/>uint32_t<sp/>num_freqs,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>uint32_t<sp/>num_antennas,<sp/>cudaStream_t<sp/>stream)<sp/>{</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//Allocate<sp/>shared<sp/>memory<sp/>on<sp/>device<sp/>for<sp/>all<sp/>filter<sp/>taps.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>shr_mem_taps<sp/>=<sp/>num_freqs<sp/>*<sp/>num_taps_per_filter<sp/>*<sp/>sizeof(cuComplex);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/><sp/><sp/>Number<sp/>of<sp/>shared<sp/>memory<sp/>bytes:<sp/>&quot;&lt;&lt;<sp/>shr_mem_taps<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>dimGrid<sp/>=<sp/>create_lowpass_grid(samples_per_antenna,<sp/>dm_rate,<sp/>num_antennas,<sp/>num_freqs);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>dimBlock<sp/>=<sp/>create_lowpass_block(num_taps_per_filter);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>lowpass_decimate1024&lt;&lt;&lt;dimGrid,dimBlock,shr_mem_taps,stream&gt;&gt;&gt;(original_samples,<sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>decimated_samples,<sp/>filter_taps,<sp/>dm_rate,<sp/>samples_per_antenna);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>This<sp/>function<sp/>wraps<sp/>the<sp/>lowpass_decimate2048<sp/>kernel<sp/>so<sp/>that<sp/>it<sp/>can<sp/>be<sp/>called<sp/>from<sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>another<sp/>file.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>original_samples<sp/><sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>one<sp/>or<sp/>more<sp/>baseband<sp/>frequency<sp/>datasets.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>decimated_samples<sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>a<sp/>buffer<sp/>to<sp/>place<sp/>output<sp/>samples<sp/>for<sp/>each<sp/>frequency</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>after<sp/>decimation.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>filter_taps<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>one<sp/>lowpass<sp/>filter.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>dm_rate<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Decimation<sp/>rate.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>samples_per_antenna<sp/><sp/>The<sp/>number<sp/>of<sp/>samples<sp/>per<sp/>antenna<sp/>in<sp/>each<sp/>data<sp/>set.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>num_taps_per_filter<sp/><sp/>Number<sp/>of<sp/>taps<sp/>per<sp/>filter.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>num_freqs<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Number<sp/>of<sp/>receive<sp/>frequency<sp/>datasets.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>num_antennas<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Number<sp/>of<sp/>antennas<sp/>for<sp/>which<sp/>there<sp/>are<sp/>samples.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>stream<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CUDA<sp/>stream<sp/>with<sp/>which<sp/>to<sp/>associate<sp/>the<sp/>invocation<sp/>of<sp/>the</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>kernel.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">void<sp/>lowpass_decimate2048_wrapper(cuComplex*<sp/>original_samples,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cuComplex*<sp/>decimated_samples,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cuComplex*<sp/>filter_taps,<sp/>uint32_t<sp/>dm_rate,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>uint32_t<sp/>samples_per_antenna,<sp/>uint32_t<sp/>num_taps_per_filter,<sp/>uint32_t<sp/>num_freqs,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>uint32_t<sp/>num_antennas,<sp/>cudaStream_t<sp/>stream)<sp/>{</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//Allocate<sp/>shared<sp/>memory<sp/>on<sp/>device<sp/>for<sp/>all<sp/>filter<sp/>taps.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>shr_mem_taps<sp/>=<sp/>num_freqs<sp/>*<sp/>num_taps_per_filter<sp/>*<sp/>sizeof(cuComplex);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/><sp/><sp/>Number<sp/>of<sp/>shared<sp/>memory<sp/>bytes:<sp/>&quot;&lt;&lt;<sp/>shr_mem_taps<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>dimGrid<sp/>=<sp/>create_lowpass_grid(samples_per_antenna,<sp/>dm_rate,<sp/>num_antennas,<sp/>num_freqs);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>dimBlock<sp/>=<sp/>create_lowpass_block(num_taps_per_filter/2);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>lowpass_decimate2048&lt;&lt;&lt;dimGrid,dimBlock,shr_mem_taps,stream&gt;&gt;&gt;(original_samples,<sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>decimated_samples,<sp/>filter_taps,<sp/>dm_rate,<sp/>samples_per_antenna);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+    </programlisting>
+    <location file="rx_signal_processing/decimate.cu"/>
+  </compounddef>
+</doxygen>

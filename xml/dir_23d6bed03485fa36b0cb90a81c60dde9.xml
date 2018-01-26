@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.11">
+  <compounddef id="dir_23d6bed03485fa36b0cb90a81c60dde9" kind="dir">
+    <compoundname>rx_signal_processing</compoundname>
+    <innerfile refid="decimate_8cu">decimate.cu</innerfile>
+    <innerfile refid="decimate_8hpp">decimate.hpp</innerfile>
+    <innerfile refid="dsp_8cu">dsp.cu</innerfile>
+    <innerfile refid="dsp_8hpp">dsp.hpp</innerfile>
+    <innerfile refid="filtering_8cpp">filtering.cpp</innerfile>
+    <innerfile refid="filtering_8hpp">filtering.hpp</innerfile>
+    <innerfile refid="remez_8c">remez.c</innerfile>
+    <innerfile refid="remez_8h">remez.h</innerfile>
+    <innerfile refid="rx__dsp__chain_8cu">rx_dsp_chain.cu</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="rx_signal_processing/"/>
+  </compounddef>
+</doxygen>

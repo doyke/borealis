@@ -1,0 +1,265 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.11">
+  <compounddef id="rx__dsp__chain_8cu" kind="file" language="C++">
+    <compoundname>rx_dsp_chain.cu</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline><highlight class="normal">#include<sp/>&lt;vector&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;string&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;zmq.hpp&gt;<sp/>//<sp/>REVIEW<sp/>#4<sp/>Need<sp/>to<sp/>explain<sp/>what<sp/>we<sp/>use<sp/>from<sp/>this<sp/>lib<sp/>in<sp/>our<sp/>general<sp/>documentation</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;thread&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;complex&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;iostream&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;fstream&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;chrono&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;stdint.h&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;signal.h&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;cstdlib&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;math.h&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;thrust/host_vector.h&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;thrust/device_vector.h&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;thrust/complex.h&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;cuda_profiler_api.h&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;thrust/system/cuda/experimental/pinned_allocator.h&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&quot;utils/protobuf/rxsamplesmetadata.pb.h&quot;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&quot;utils/protobuf/sigprocpacket.pb.h&quot;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&quot;utils/driver_options/driveroptions.hpp&quot;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&quot;utils/signal_processing_options/signalprocessingoptions.hpp&quot;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&quot;utils/shared_memory/shared_memory.hpp&quot;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&quot;utils/shared_macros/shared_macros.hpp&quot;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">#include<sp/>&quot;dsp.hpp&quot;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&quot;filtering.hpp&quot;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&quot;decimate.hpp&quot;</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">int<sp/>main(int<sp/>argc,<sp/>char<sp/>**argv){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>GOOGLE_PROTOBUF_VERIFY_VERSION;<sp/>//<sp/>Verifies<sp/>that<sp/>header<sp/>and<sp/>lib<sp/>are<sp/>same<sp/>version.</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//TODO(keith):<sp/>verify<sp/>config<sp/>options.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>driver_options<sp/>=<sp/>DriverOptions();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>sig_options<sp/>=<sp/>SignalProcessingOptions();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>rx_rate<sp/>=<sp/>driver_options.get_rx_rate();<sp/>//Hz</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>zmq::context_t<sp/>sig_proc_context(1);<sp/>//<sp/>1<sp/>is<sp/>context<sp/>num.<sp/>Only<sp/>need<sp/>one<sp/>per<sp/>program<sp/>as<sp/>per<sp/>examples</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>zmq::socket_t<sp/>driver_socket(sig_proc_context,<sp/>ZMQ_PAIR);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ERR_CHK_ZMQ(driver_socket.bind(sig_options.get_driver_socket_address()))</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//This<sp/>socket<sp/>is<sp/>used<sp/>to<sp/>receive<sp/>metadata<sp/>about<sp/>the<sp/>sequence<sp/>to<sp/>process</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>zmq::socket_t<sp/>radar_control_socket(sig_proc_context,<sp/>ZMQ_PAIR);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ERR_CHK_ZMQ(radar_control_socket.bind(sig_options.get_radar_control_socket_address()))</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//This<sp/>socket<sp/>is<sp/>used<sp/>to<sp/>acknowledge<sp/>a<sp/>completed<sp/>sequence<sp/>to<sp/>radar_control</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>zmq::socket_t<sp/>ack_socket(sig_proc_context,<sp/>ZMQ_PAIR);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ERR_CHK_ZMQ(ack_socket.bind(sig_options.get_ack_socket_address()))</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//This<sp/>socket<sp/>is<sp/>used<sp/>to<sp/>send<sp/>the<sp/>GPU<sp/>kernel<sp/>timing<sp/>to<sp/>radar_control<sp/>to<sp/>know<sp/>if<sp/>the<sp/>processing</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//can<sp/>be<sp/>done<sp/>in<sp/>real-time.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>zmq::socket_t<sp/>timing_socket(sig_proc_context,<sp/>ZMQ_PAIR);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ERR_CHK_ZMQ(timing_socket.bind(sig_options.get_timing_socket_address()))</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>zmq::socket_t<sp/>data_write_socket(sig_proc_context,ZMQ_PAIR);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ERR_CHK_ZMQ(data_write_socket.connect(sig_options.get_data_write_address()))</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>gpu_properties<sp/>=<sp/>get_gpu_properties();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>print_gpu_properties(gpu_properties);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>uint32_t<sp/>first_stage_dm_rate<sp/>=<sp/>0,<sp/>second_stage_dm_rate<sp/>=<sp/>0,<sp/>third_stage_dm_rate<sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//Check<sp/>for<sp/>non<sp/>integer<sp/>dm<sp/>rates</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>if<sp/>(fmod(rx_rate,sig_options.get_first_stage_sample_rate())<sp/>&gt;<sp/>0.0)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//TODO(keith):<sp/>handle<sp/>error</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}<sp/>//TODO(keith):<sp/>not<sp/>sure<sp/>these<sp/>checks<sp/>will<sp/>work.</highlight></codeline>
+<codeline><highlight class="normal">/*<sp/><sp/>else<sp/>if<sp/>(fmod(sig_options.get_first_stage_sample_rate(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>sig_options.get_second_stage_sample_rate())<sp/>&gt;<sp/>0.0)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//TODO(keith):<sp/>handle<sp/>error</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>else<sp/>if(fmod(sig_options.get_second_stage_sample_rate(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>sig_options.get_third_stage_sample_rate())<sp/>&gt;<sp/>0.0)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//TODO(keith):<sp/>handle<sp/>error</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}*/</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>else{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>float_dm_rate<sp/>=<sp/>rx_rate/sig_options.get_first_stage_sample_rate();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>first_stage_dm_rate<sp/>=<sp/>static_cast&lt;uint32_t&gt;(float_dm_rate);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>float_dm_rate<sp/>=<sp/>sig_options.get_first_stage_sample_rate()/</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>sig_options.get_second_stage_sample_rate();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>second_stage_dm_rate<sp/>=<sp/>static_cast&lt;uint32_t&gt;(float_dm_rate);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>float_dm_rate<sp/>=<sp/>sig_options.get_second_stage_sample_rate()/</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>sig_options.get_third_stage_sample_rate();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>third_stage_dm_rate<sp/>=<sp/>static_cast&lt;uint32_t&gt;(float_dm_rate);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>RUNTIME_MSG(&quot;1st<sp/>stage<sp/>dm<sp/>rate:<sp/>&quot;<sp/>&lt;&lt;<sp/>COLOR_YELLOW(first_stage_dm_rate));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>RUNTIME_MSG(&quot;2nd<sp/>stage<sp/>dm<sp/>rate:<sp/>&quot;<sp/>&lt;&lt;<sp/>COLOR_YELLOW(second_stage_dm_rate));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>RUNTIME_MSG(&quot;3rd<sp/>stage<sp/>dm<sp/>rate:<sp/>&quot;<sp/>&lt;&lt;<sp/>COLOR_YELLOW(third_stage_dm_rate));</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>filter_timing_start<sp/>=<sp/>std::chrono::steady_clock::now();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Filtering<sp/>filters(rx_rate,sig_options);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>RUNTIME_MSG(&quot;Number<sp/>of<sp/>1st<sp/>stage<sp/>taps:<sp/>&quot;<sp/>&lt;&lt;<sp/>COLOR_YELLOW(filters.get_num_first_stage_taps()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>RUNTIME_MSG(&quot;Number<sp/>of<sp/>2nd<sp/>stage<sp/>taps:<sp/>&quot;<sp/>&lt;&lt;<sp/>COLOR_YELLOW(filters.get_num_second_stage_taps()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>RUNTIME_MSG(&quot;Number<sp/>of<sp/>3rd<sp/>stage<sp/>taps:<sp/>&quot;<sp/>&lt;&lt;<sp/>COLOR_YELLOW(filters.get_num_third_stage_taps()));</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>RUNTIME_MSG(&quot;Number<sp/>of<sp/>1st<sp/>stage<sp/>taps<sp/>after<sp/>padding:<sp/>&quot;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>COLOR_YELLOW(filters.get_first_stage_lowpass_taps().size()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>RUNTIME_MSG(&quot;Number<sp/>of<sp/>2nd<sp/>stage<sp/>taps<sp/>after<sp/>padding:<sp/>&quot;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>COLOR_YELLOW(filters.get_second_stage_lowpass_taps().size()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>RUNTIME_MSG(&quot;Number<sp/>of<sp/>3rd<sp/>stage<sp/>taps<sp/>after<sp/>padding:<sp/>&quot;<sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>COLOR_YELLOW(filters.get_third_stage_lowpass_taps().size()));</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>filter_timing_end<sp/>=<sp/>std::chrono::steady_clock::now();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>auto<sp/>time_diff<sp/>=<sp/>std::chrono::duration_cast&lt;std::chrono::microseconds&gt;(filter_timing_end<sp/>-</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>filter_timing_start).count();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>RUNTIME_MSG(&quot;Time<sp/>to<sp/>create<sp/>3<sp/>filters:<sp/>&quot;<sp/>&lt;&lt;<sp/>COLOR_MAGENTA(time_diff)<sp/>&lt;&lt;<sp/>&quot;us&quot;);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//FIXME(Keith):<sp/>fix<sp/>saving<sp/>filter<sp/>to<sp/>file</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>filters.save_filter_to_file(filters.get_first_stage_lowpass_taps(),&quot;filter1coefficients.dat&quot;);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>filters.save_filter_to_file(filters.get_second_stage_lowpass_taps(),&quot;filter2coefficients.dat&quot;);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>filters.save_filter_to_file(filters.get_third_stage_lowpass_taps(),&quot;filter3coefficients.dat&quot;);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>for(;;){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//Receive<sp/>packet<sp/>from<sp/>radar<sp/>control</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>zmq::message_t<sp/>radctl_request;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>radar_control_socket.recv(&amp;radctl_request);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sigprocpacket::SigProcPacket<sp/>sp_packet;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::string<sp/>radctrl_str(static_cast&lt;char*&gt;(radctl_request.data()),<sp/>radctl_request.size());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>if<sp/>(sp_packet.ParseFromString(radctrl_str)<sp/>==<sp/>false){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>//TODO(keith):<sp/>handle<sp/>error</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//Then<sp/>receive<sp/>packet<sp/>from<sp/>driver</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>zmq::message_t<sp/>driver_request;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>driver_socket.recv(&amp;driver_request);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>rxsamplesmetadata::RxSamplesMetadata<sp/>rx_metadata;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::string<sp/>driver_str(static_cast&lt;char*&gt;(driver_request.data()),<sp/>driver_request.size());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>if<sp/>(rx_metadata.ParseFromString(driver_str)<sp/>==<sp/>false)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>//TODO(keith):<sp/>handle<sp/>error</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>RUNTIME_MSG(&quot;Got<sp/>driver<sp/>request<sp/>for<sp/>sequence<sp/>#&quot;<sp/>&lt;&lt;<sp/>COLOR_RED(rx_metadata.sequence_num()));</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//Verify<sp/>driver<sp/>and<sp/>radar<sp/>control<sp/>packets<sp/>align</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>if<sp/>(sp_packet.sequence_num()<sp/>!=<sp/>rx_metadata.sequence_num())<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>//TODO(keith):<sp/>handle<sp/>error</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>RUNTIME_MSG(&quot;SEQUENCE<sp/>NUMBER<sp/>mismatch<sp/>radar_control:<sp/>&quot;<sp/>&lt;&lt;<sp/>COLOR_RED(sp_packet.sequence_num())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>&quot;<sp/>usrp_driver:<sp/>&quot;<sp/>&lt;&lt;<sp/>COLOR_RED(rx_metadata.sequence_num()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//Parse<sp/>needed<sp/>packet<sp/>values<sp/>now</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>if<sp/>(sp_packet.rxchannel_size()<sp/>==<sp/>0)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>//TODO(keith):<sp/>handle<sp/>error</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;double&gt;<sp/>rx_freqs;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>for(int<sp/>i=0;<sp/>i&lt;sp_packet.rxchannel_size();<sp/>i++)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>rx_freqs.push_back(sp_packet.rxchannel(i).rxfreq());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>TIMEIT_IF_DEBUG(&quot;<sp/><sp/><sp/>NCO<sp/>mix<sp/>timing:<sp/>&quot;,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>[&amp;]()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>filters.mix_first_stage_to_bandpass(rx_freqs,rx_rate);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>}()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>if<sp/>(rx_metadata.shrmemname().empty()){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>//TODO(keith):<sp/>handle<sp/>missing<sp/>name<sp/>error</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>DSPCore<sp/>*dp<sp/>=<sp/>new<sp/>DSPCore(&amp;ack_socket,<sp/>&amp;timing_socket,<sp/>&amp;data_write_socket,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>sp_packet.sequence_num(),<sp/>rx_metadata.shrmemname(),<sp/>rx_freqs);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>if<sp/>(rx_metadata.numberofreceivesamples()<sp/>==<sp/>0){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>//TODO(keith):<sp/>handle<sp/>error<sp/>for<sp/>missing<sp/>number<sp/>of<sp/>samples.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>total_antennas<sp/>=<sp/>sig_options.get_main_antenna_count()<sp/>+</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>sig_options.get_interferometer_antenna_count();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>total_samples<sp/>=<sp/>rx_metadata.numberofreceivesamples()<sp/>*<sp/>total_antennas;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>DEBUG_MSG(&quot;<sp/><sp/><sp/>Total<sp/>samples<sp/>in<sp/>data<sp/>message:<sp/>&quot;<sp/>&lt;&lt;<sp/>total_samples);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>dp-&gt;allocate_and_copy_rf_samples(total_samples);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>dp-&gt;allocate_and_copy_first_stage_filters(filters.get_first_stage_bandpass_taps_h().data(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>filters.get_first_stage_bandpass_taps_h().size());</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>num_output_samples_per_antenna_1<sp/>=<sp/>rx_metadata.numberofreceivesamples()/</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>first_stage_dm_rate;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>total_output_samples_1<sp/>=<sp/>rx_freqs.size()<sp/>*<sp/>num_output_samples_per_antenna_1<sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>total_antennas;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>dp-&gt;allocate_first_stage_output(total_output_samples_1);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>dp-&gt;initial_memcpy_callback();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>call_decimate&lt;DecimationType::bandpass&gt;(dp-&gt;get_rf_samples_p(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>dp-&gt;get_first_stage_output_p(),dp-&gt;get_first_stage_bp_filters_p(),<sp/>first_stage_dm_rate,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>rx_metadata.numberofreceivesamples(),<sp/>filters.get_first_stage_lowpass_taps().size(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>rx_freqs.size(),<sp/>total_antennas,<sp/>&quot;First<sp/>stage<sp/>of<sp/>decimation&quot;,<sp/>dp-&gt;get_cuda_stream());</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>When<sp/>decimating,<sp/>we<sp/>go<sp/>from<sp/>one<sp/>set<sp/>of<sp/>samples<sp/>for<sp/>each<sp/>antenna<sp/>in<sp/>the<sp/>first<sp/>stage</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>to<sp/>multiple<sp/>sets<sp/>of<sp/>reduced<sp/>samples<sp/>for<sp/>each<sp/>frequency<sp/>in<sp/>further<sp/>stages.<sp/>Output<sp/>samples<sp/>are</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>grouped<sp/>by<sp/>frequency<sp/>with<sp/>all<sp/>samples<sp/>for<sp/>each<sp/>antenna<sp/>following<sp/>each<sp/>other</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>before<sp/>samples<sp/>of<sp/>another<sp/>frequency<sp/>start.<sp/>In<sp/>the<sp/>first<sp/>stage<sp/>need<sp/>a<sp/>filter<sp/>for<sp/>each</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>frequency,<sp/>but<sp/>in<sp/>the<sp/>next<sp/>stages<sp/>we<sp/>only<sp/>need<sp/>one<sp/>filter<sp/>for<sp/>all<sp/>data<sp/>sets.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>dp-&gt;allocate_and_copy_second_stage_filter(filters.get_second_stage_lowpass_taps().data(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>filters.get_second_stage_lowpass_taps().size());</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>num_output_samples_per_antenna_2<sp/>=<sp/>num_output_samples_per_antenna_1<sp/>/<sp/>second_stage_dm_rate;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>total_output_samples_2<sp/>=<sp/>rx_freqs.size()<sp/>*<sp/>num_output_samples_per_antenna_2<sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>total_antennas;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>dp-&gt;allocate_second_stage_output(total_output_samples_2);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//<sp/>each<sp/>antenna<sp/>has<sp/>a<sp/>data<sp/>set<sp/>for<sp/>each<sp/>frequency<sp/>after<sp/>filtering.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>samples_per_antenna_2<sp/>=<sp/>total_output_samples_1/total_antennas/rx_freqs.size();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>call_decimate&lt;DecimationType::lowpass&gt;(dp-&gt;get_first_stage_output_p(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>dp-&gt;get_second_stage_output_p(),<sp/>dp-&gt;get_second_stage_filter_p(),<sp/>second_stage_dm_rate,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>samples_per_antenna_2,<sp/>filters.get_second_stage_lowpass_taps().size(),<sp/>rx_freqs.size(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>total_antennas,<sp/>&quot;Second<sp/>stage<sp/>of<sp/>decimation&quot;,<sp/>dp-&gt;get_cuda_stream());</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>dp-&gt;allocate_and_copy_third_stage_filter(filters.get_third_stage_lowpass_taps().data(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>filters.get_third_stage_lowpass_taps().size());</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>num_output_samples_per_antenna_3<sp/>=<sp/>num_output_samples_per_antenna_2<sp/>/<sp/>third_stage_dm_rate;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>total_output_samples_3<sp/>=<sp/>rx_freqs.size()<sp/>*<sp/>num_output_samples_per_antenna_3<sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>total_antennas;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>dp-&gt;allocate_third_stage_output(total_output_samples_3);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>samples_per_antenna_3<sp/>=<sp/>samples_per_antenna_2/second_stage_dm_rate;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>call_decimate&lt;DecimationType::lowpass&gt;(dp-&gt;get_second_stage_output_p(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>dp-&gt;get_third_stage_output_p(),<sp/>dp-&gt;get_third_stage_filter_p(),<sp/>third_stage_dm_rate,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>samples_per_antenna_3,<sp/>filters.get_third_stage_lowpass_taps().size(),<sp/>rx_freqs.size(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>total_antennas,<sp/>&quot;Third<sp/>stage<sp/>of<sp/>decimation&quot;,<sp/>dp-&gt;get_cuda_stream());</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>dp-&gt;allocate_and_copy_host_output(total_output_samples_3);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>dp-&gt;cuda_postprocessing_callback(rx_freqs,<sp/>total_antennas,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>num_output_samples_per_antenna_1,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>num_output_samples_per_antenna_2,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>num_output_samples_per_antenna_3);</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+    </programlisting>
+    <location file="rx_signal_processing/rx_dsp_chain.cu"/>
+  </compounddef>
+</doxygen>

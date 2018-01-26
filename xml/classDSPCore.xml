@@ -1,0 +1,1090 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.11">
+  <compounddef id="classDSPCore" kind="class" language="C++" prot="public">
+    <compoundname>DSPCore</compoundname>
+    <includes refid="dsp_8hpp" local="no">dsp.hpp</includes>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classDSPCore_1a2de6e1a2327cec8738692e6e57db9d83" prot="private" static="no" mutable="no">
+        <type>cudaStream_t</type>
+        <definition>cudaStream_t DSPCore::stream</definition>
+        <argsstring></argsstring>
+        <name>stream</name>
+        <briefdescription>
+<para>CUDA stream the work will be associated with. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="94" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="94" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1ae082b820022b09351f1d07112c3a1961" prot="private" static="no" mutable="no">
+        <type>uint32_t</type>
+        <definition>uint32_t DSPCore::sequence_num</definition>
+        <argsstring></argsstring>
+        <name>sequence_num</name>
+        <briefdescription>
+<para>Sequence number used to identify and acknowledge a pulse sequence. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="97" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="97" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1a069667837335374f97a56a7ee88e759b" prot="private" static="no" mutable="no">
+        <type>zmq::socket_t *</type>
+        <definition>zmq::socket_t* DSPCore::ack_socket</definition>
+        <argsstring></argsstring>
+        <name>ack_socket</name>
+        <briefdescription>
+<para>Pointer to the socket used to acknowledge the RF samples have been copied to device. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="100" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="100" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1a6089983f74693fa6b4f007670f39d0c7" prot="private" static="no" mutable="no">
+        <type>zmq::socket_t *</type>
+        <definition>zmq::socket_t* DSPCore::timing_socket</definition>
+        <argsstring></argsstring>
+        <name>timing_socket</name>
+        <briefdescription>
+<para>Pointer to the socket used to report the timing of GPU kernels. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="103" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="103" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1ae9c1a7d0ac6efe2bb5f64b672d711187" prot="private" static="no" mutable="no">
+        <type>zmq::socket_t *</type>
+        <definition>zmq::socket_t* DSPCore::data_write_socket</definition>
+        <argsstring></argsstring>
+        <name>data_write_socket</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="105" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="105" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1af9098ead8e7a6255d4cd435a2babae57" prot="private" static="no" mutable="no">
+        <type>float</type>
+        <definition>float DSPCore::total_process_timing_ms</definition>
+        <argsstring></argsstring>
+        <name>total_process_timing_ms</name>
+        <briefdescription>
+<para>Stores the total GPU process timing once all the work is done. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="107" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="107" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1ae5e61c5ba7d873467da89ef2cf20076a" prot="private" static="no" mutable="no">
+        <type>float</type>
+        <definition>float DSPCore::decimate_kernel_timing_ms</definition>
+        <argsstring></argsstring>
+        <name>decimate_kernel_timing_ms</name>
+        <briefdescription>
+<para>Stores the decimation timing. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="111" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="111" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1a6e1d6a5fe0b345d243e563abf9537722" prot="private" static="no" mutable="no">
+        <type>cuComplex *</type>
+        <definition>cuComplex* DSPCore::rf_samples_d</definition>
+        <argsstring></argsstring>
+        <name>rf_samples_d</name>
+        <briefdescription>
+<para>Pointer to the RF samples on device. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="114" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="114" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1aa8de16dcf618770da5b4641633866a08" prot="private" static="no" mutable="no">
+        <type>cuComplex *</type>
+        <definition>cuComplex* DSPCore::first_stage_bp_filters_d</definition>
+        <argsstring></argsstring>
+        <name>first_stage_bp_filters_d</name>
+        <briefdescription>
+<para>Pointer to the first stage bandpass filters on device. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="117" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="117" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1a699ab40e01dcb163ecf5065a287095d6" prot="private" static="no" mutable="no">
+        <type>cuComplex *</type>
+        <definition>cuComplex* DSPCore::second_stage_filter_d</definition>
+        <argsstring></argsstring>
+        <name>second_stage_filter_d</name>
+        <briefdescription>
+<para>Pointer to the second stage filters on device. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="120" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="120" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1aa77712ce39416b61478679174780e83a" prot="private" static="no" mutable="no">
+        <type>cuComplex *</type>
+        <definition>cuComplex* DSPCore::third_stage_filter_d</definition>
+        <argsstring></argsstring>
+        <name>third_stage_filter_d</name>
+        <briefdescription>
+<para>Pointer to the third stage filters on device. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="123" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="123" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1ad9ed648647f18ef61838f9e4e1ae8864" prot="private" static="no" mutable="no">
+        <type>cuComplex *</type>
+        <definition>cuComplex* DSPCore::first_stage_output_d</definition>
+        <argsstring></argsstring>
+        <name>first_stage_output_d</name>
+        <briefdescription>
+<para>Pointer to the output of the first stage decimation on device. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="126" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="126" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1a858ec0873471d3b22c0d1de2851998d0" prot="private" static="no" mutable="no">
+        <type>cuComplex *</type>
+        <definition>cuComplex* DSPCore::second_stage_output_d</definition>
+        <argsstring></argsstring>
+        <name>second_stage_output_d</name>
+        <briefdescription>
+<para>Pointer to the output of the second stage decimation on device. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="129" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="129" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1a6b9c10a1dadaaa70b21c4a6ae09b582f" prot="private" static="no" mutable="no">
+        <type>cuComplex *</type>
+        <definition>cuComplex* DSPCore::third_stage_output_d</definition>
+        <argsstring></argsstring>
+        <name>third_stage_output_d</name>
+        <briefdescription>
+<para>Pointer to the output of the third stage decimation on device. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="132" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="132" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1afd910211137837ca9a01495cfbe36b19" prot="private" static="no" mutable="no">
+        <type>cuComplex *</type>
+        <definition>cuComplex* DSPCore::host_output_h</definition>
+        <argsstring></argsstring>
+        <name>host_output_h</name>
+        <briefdescription>
+<para>Pointer to the host output samples. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="135" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="135" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1a0c7d7766d50437022e842434e8fa6f20" prot="private" static="no" mutable="no">
+        <type>cudaEvent_t</type>
+        <definition>cudaEvent_t DSPCore::initial_start</definition>
+        <argsstring></argsstring>
+        <name>initial_start</name>
+        <briefdescription>
+<para>CUDA event to timestamp when the GPU processing begins. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="138" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="138" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1ae5f078c5a431bc48c86a29c16836749a" prot="private" static="no" mutable="no">
+        <type>cudaEvent_t</type>
+        <definition>cudaEvent_t DSPCore::kernel_start</definition>
+        <argsstring></argsstring>
+        <name>kernel_start</name>
+        <briefdescription>
+<para>CUDA event to timestamp when the kernels begin executing. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="141" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="141" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1af511e9ad1ee50c4783b7b86e8fb891e1" prot="private" static="no" mutable="no">
+        <type>cudaEvent_t</type>
+        <definition>cudaEvent_t DSPCore::stop</definition>
+        <argsstring></argsstring>
+        <name>stop</name>
+        <briefdescription>
+<para>CUDA event to timestamp when the GPU processing stops. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="144" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="144" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1a0e634d61cc6ff5242007e46d4e43a542" prot="private" static="no" mutable="no">
+        <type>cudaEvent_t</type>
+        <definition>cudaEvent_t DSPCore::mem_transfer_end</definition>
+        <argsstring></argsstring>
+        <name>mem_transfer_end</name>
+        <briefdescription>
+<para>Cuda event to timestamp the transfer of RF samples to the GPU. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="147" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="147" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1ad910b95f4335e666b1cb218a98068fff" prot="private" static="no" mutable="no">
+        <type>float</type>
+        <definition>float DSPCore::mem_time_ms</definition>
+        <argsstring></argsstring>
+        <name>mem_time_ms</name>
+        <briefdescription>
+<para>Stores the memory transfer timing. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="150" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="150" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1a607b8c25aa2c2f2b1716fa5c198247cd" prot="private" static="no" mutable="no">
+        <type>SharedMemoryHandler</type>
+        <definition>SharedMemoryHandler DSPCore::shr_mem</definition>
+        <argsstring></argsstring>
+        <name>shr_mem</name>
+        <briefdescription>
+<para>A shared memory handler object that contains RF samples from the <ref refid="classUSRP" kindref="compound">USRP</ref> driver. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="153" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="153" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1a9209790582acffb348b6745ca08644b6" prot="private" static="no" mutable="no">
+        <type>cuComplex *</type>
+        <definition>cuComplex* DSPCore::first_stage_output_h</definition>
+        <argsstring></argsstring>
+        <name>first_stage_output_h</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="155" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="155" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1a256c51bc26176525d371cb373e949b31" prot="private" static="no" mutable="no">
+        <type>cuComplex *</type>
+        <definition>cuComplex* DSPCore::second_stage_output_h</definition>
+        <argsstring></argsstring>
+        <name>second_stage_output_h</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="156" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="156" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1ae33cb35963981771c36c6e104d50df69" prot="private" static="no" mutable="no">
+        <type>cuComplex *</type>
+        <definition>cuComplex* DSPCore::third_stage_output_h</definition>
+        <argsstring></argsstring>
+        <name>third_stage_output_h</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="157" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="157" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1a75a9a634f86df731c171968c0a522575" prot="private" static="no" mutable="no">
+        <type>std::vector&lt; double &gt;</type>
+        <definition>std::vector&lt;double&gt; DSPCore::rx_freqs</definition>
+        <argsstring></argsstring>
+        <name>rx_freqs</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="159" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="159" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1a1b1af1c38d69c7c7160078e8819c9269" prot="private" static="no" mutable="no">
+        <type>uint32_t</type>
+        <definition>uint32_t DSPCore::num_antennas</definition>
+        <argsstring></argsstring>
+        <name>num_antennas</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="160" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="160" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1aa7f3f3a98e382f8059edaec65149be52" prot="private" static="no" mutable="no">
+        <type>uint32_t</type>
+        <definition>uint32_t DSPCore::num_first_stage_samples_per_antenna</definition>
+        <argsstring></argsstring>
+        <name>num_first_stage_samples_per_antenna</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="161" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="161" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1a959c0f166ea9b06cbbabf91089548540" prot="private" static="no" mutable="no">
+        <type>uint32_t</type>
+        <definition>uint32_t DSPCore::num_second_stage_samples_per_antenna</definition>
+        <argsstring></argsstring>
+        <name>num_second_stage_samples_per_antenna</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="162" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="162" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classDSPCore_1adbd9fd85dd6846be0ae708b49195fb0c" prot="private" static="no" mutable="no">
+        <type>uint32_t</type>
+        <definition>uint32_t DSPCore::num_third_stage_samples_per_antenna</definition>
+        <argsstring></argsstring>
+        <name>num_third_stage_samples_per_antenna</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="163" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="163" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classDSPCore_1a4fe0f050730b49c0825013af2b286c1b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void DSPCore::cuda_postprocessing_callback</definition>
+        <argsstring>(std::vector&lt; double &gt; freqs, uint32_t total_antennas, uint32_t num_output_samples_per_antenna_1, uint32_t num_output_samples_per_antenna_2, uint32_t num_output_samples_per_antenna_3)</argsstring>
+        <name>cuda_postprocessing_callback</name>
+        <param>
+          <type>std::vector&lt; double &gt;</type>
+          <declname>freqs</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>total_antennas</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_output_samples_per_antenna_1</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_output_samples_per_antenna_2</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_output_samples_per_antenna_3</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="47" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1ad3be4abdacd8e8531d086600f715ae22" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void DSPCore::initial_memcpy_callback</definition>
+        <argsstring>()</argsstring>
+        <name>initial_memcpy_callback</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="51" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1adfbc6f228bf7d5d74fe9edfe3cda08fb" prot="public" static="no" const="no" explicit="yes" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>DSPCore::DSPCore</definition>
+        <argsstring>(zmq::socket_t *ack_s, zmq::socket_t *timing_s, zmq::socket_t *data_write_socket, uint32_t sq_num, std::string shr_mem_name, std::vector&lt; double &gt; freqs)</argsstring>
+        <name>DSPCore</name>
+        <param>
+          <type>zmq::socket_t *</type>
+          <declname>ack_s</declname>
+        </param>
+        <param>
+          <type>zmq::socket_t *</type>
+          <declname>timing_s</declname>
+        </param>
+        <param>
+          <type>zmq::socket_t *</type>
+          <declname>data_write_socket</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>sq_num</declname>
+        </param>
+        <param>
+          <type>std::string</type>
+          <declname>shr_mem_name</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; double &gt;</type>
+          <declname>freqs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="53" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a0cc0b50c5d49e1e3c6bafaeac7d55b60" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>DSPCore::~DSPCore</definition>
+        <argsstring>()</argsstring>
+        <name>~DSPCore</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="55" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1af52a42ade9c1d0938daf3de7db34f736" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void DSPCore::allocate_and_copy_rf_samples</definition>
+        <argsstring>(uint32_t total_samples)</argsstring>
+        <name>allocate_and_copy_rf_samples</name>
+        <param>
+          <type>uint32_t</type>
+          <declname>total_samples</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="56" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a3612a62c265ebec12db6c7c65c8cb230" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void DSPCore::allocate_and_copy_first_stage_filters</definition>
+        <argsstring>(void *taps, uint32_t total_taps)</argsstring>
+        <name>allocate_and_copy_first_stage_filters</name>
+        <param>
+          <type>void *</type>
+          <declname>taps</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>total_taps</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="57" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a641c6ed5715259c9bec30942ea0f253e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void DSPCore::allocate_and_copy_second_stage_filter</definition>
+        <argsstring>(void *taps, uint32_t total_taps)</argsstring>
+        <name>allocate_and_copy_second_stage_filter</name>
+        <param>
+          <type>void *</type>
+          <declname>taps</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>total_taps</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="58" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a72f37dbaab1c33c049e11b8a82752ef0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void DSPCore::allocate_and_copy_third_stage_filter</definition>
+        <argsstring>(void *taps, uint32_t total_taps)</argsstring>
+        <name>allocate_and_copy_third_stage_filter</name>
+        <param>
+          <type>void *</type>
+          <declname>taps</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>total_taps</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="59" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a13f98aa8f82f21ca5293e75c280ccd98" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void DSPCore::allocate_first_stage_output</definition>
+        <argsstring>(uint32_t num_first_stage_output_samples)</argsstring>
+        <name>allocate_first_stage_output</name>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_first_stage_output_samples</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="60" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a9c1f32d784b4fb7963985496198e8bf4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void DSPCore::allocate_second_stage_output</definition>
+        <argsstring>(uint32_t num_second_stage_output_samples)</argsstring>
+        <name>allocate_second_stage_output</name>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_second_stage_output_samples</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="61" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a17620818c1fe667f8c1a66bd74e4cab5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void DSPCore::allocate_third_stage_output</definition>
+        <argsstring>(uint32_t num_third_stage_output_samples)</argsstring>
+        <name>allocate_third_stage_output</name>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_third_stage_output_samples</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="62" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1aea38d20a64eca8d89bd58832e347642e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void DSPCore::allocate_and_copy_host_output</definition>
+        <argsstring>(uint32_t num_host_samples)</argsstring>
+        <name>allocate_and_copy_host_output</name>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_host_samples</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="63" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a16f3bbf6c567573b9a964afc1c7c446b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void DSPCore::clear_device_and_destroy</definition>
+        <argsstring>()</argsstring>
+        <name>clear_device_and_destroy</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="64" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1ae5201569e1c75400e2b762055f57c4ee" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cuComplex *</type>
+        <definition>cuComplex* DSPCore::get_rf_samples_p</definition>
+        <argsstring>()</argsstring>
+        <name>get_rf_samples_p</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="65" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a5a9be7f95a26ce8ecc7aac08b01a0a63" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cuComplex *</type>
+        <definition>cuComplex* DSPCore::get_first_stage_bp_filters_p</definition>
+        <argsstring>()</argsstring>
+        <name>get_first_stage_bp_filters_p</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="66" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a57a22b5dd3648fb7732121d2c659a02f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cuComplex *</type>
+        <definition>cuComplex* DSPCore::get_second_stage_filter_p</definition>
+        <argsstring>()</argsstring>
+        <name>get_second_stage_filter_p</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="67" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1abf9816074d1a80a19faa2d5a9bc680c2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cuComplex *</type>
+        <definition>cuComplex* DSPCore::get_third_stage_filter_p</definition>
+        <argsstring>()</argsstring>
+        <name>get_third_stage_filter_p</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="68" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a5ba2416cd671bcbf2adc813d1aeead9c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cuComplex *</type>
+        <definition>cuComplex* DSPCore::get_first_stage_output_p</definition>
+        <argsstring>()</argsstring>
+        <name>get_first_stage_output_p</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="69" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a1df494cd3b9929874241461f6413e938" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cuComplex *</type>
+        <definition>cuComplex* DSPCore::get_second_stage_output_p</definition>
+        <argsstring>()</argsstring>
+        <name>get_second_stage_output_p</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="70" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1adee20e562d54a4e91d2b0ee4339272e9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cuComplex *</type>
+        <definition>cuComplex* DSPCore::get_third_stage_output_p</definition>
+        <argsstring>()</argsstring>
+        <name>get_third_stage_output_p</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="71" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a7c453fcf7549500488cae4fad46a0f67" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cuComplex *</type>
+        <definition>cuComplex* DSPCore::get_first_stage_output_h</definition>
+        <argsstring>()</argsstring>
+        <name>get_first_stage_output_h</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="72" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a5c5390b5bc22121a8c5658a4e8ab469e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cuComplex *</type>
+        <definition>cuComplex* DSPCore::get_second_stage_output_h</definition>
+        <argsstring>()</argsstring>
+        <name>get_second_stage_output_h</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="73" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a46129f4d3b9897f1e8ee15f18351f680" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cuComplex *</type>
+        <definition>cuComplex* DSPCore::get_third_stage_output_h</definition>
+        <argsstring>()</argsstring>
+        <name>get_third_stage_output_h</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="74" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a209535629034fb04f4c88e554721b68c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>std::vector&lt; double &gt;</type>
+        <definition>std::vector&lt;double&gt; DSPCore::get_rx_freqs</definition>
+        <argsstring>()</argsstring>
+        <name>get_rx_freqs</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="75" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a2d608e5f7262dad49d757df4526ceefa" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>float</type>
+        <definition>float DSPCore::get_total_timing</definition>
+        <argsstring>()</argsstring>
+        <name>get_total_timing</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="76" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a595cf8b5e0f9b607fab599c80d3767c3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>float</type>
+        <definition>float DSPCore::get_decimate_timing</definition>
+        <argsstring>()</argsstring>
+        <name>get_decimate_timing</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="77" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1ac64ec497869bcfd0aa5105ca34a87524" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>uint32_t</type>
+        <definition>uint32_t DSPCore::get_num_antennas</definition>
+        <argsstring>()</argsstring>
+        <name>get_num_antennas</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="78" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1af4607144adb61ddf6235cb68dfadf5c4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>uint32_t</type>
+        <definition>uint32_t DSPCore::get_num_first_stage_samples_per_antenna</definition>
+        <argsstring>()</argsstring>
+        <name>get_num_first_stage_samples_per_antenna</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="79" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a41671ab0fd681b76ca40cef3a56b18f5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>uint32_t</type>
+        <definition>uint32_t DSPCore::get_num_second_stage_samples_per_antenna</definition>
+        <argsstring>()</argsstring>
+        <name>get_num_second_stage_samples_per_antenna</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="80" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1ae7428ad7f4f828f6b388c94327afb21d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>uint32_t</type>
+        <definition>uint32_t DSPCore::get_num_third_stage_samples_per_antenna</definition>
+        <argsstring>()</argsstring>
+        <name>get_num_third_stage_samples_per_antenna</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="81" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a3bfe901acc35e9429bbceb10680e177f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>uint32_t</type>
+        <definition>uint32_t DSPCore::get_sequence_num</definition>
+        <argsstring>()</argsstring>
+        <name>get_sequence_num</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="82" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a80f4d5b63b2a3b94c3b512328c05dd9a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cudaStream_t</type>
+        <definition>cudaStream_t DSPCore::get_cuda_stream</definition>
+        <argsstring>()</argsstring>
+        <name>get_cuda_stream</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="83" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1af3482064dfd4c619cc5898495a20ef86" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void DSPCore::start_decimate_timing</definition>
+        <argsstring>()</argsstring>
+        <name>start_decimate_timing</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="84" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1aa25eed35e1251ce6fd127fd6785874ac" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void DSPCore::stop_timing</definition>
+        <argsstring>()</argsstring>
+        <name>stop_timing</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="85" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a011c08289c27ebb26f0c438c96658729" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void DSPCore::send_ack</definition>
+        <argsstring>()</argsstring>
+        <name>send_ack</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="86" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a55ce6f498d2b8b89a50d2082d068967b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void DSPCore::send_timing</definition>
+        <argsstring>()</argsstring>
+        <name>send_timing</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="87" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1a642c93a611bde02a050e1a68f7590a77" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void DSPCore::send_processed_data</definition>
+        <argsstring>(processeddata::ProcessedData &amp;pd)</argsstring>
+        <name>send_processed_data</name>
+        <param>
+          <type>processeddata::ProcessedData &amp;</type>
+          <declname>pd</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="88" column="1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-func">
+      <memberdef kind="function" id="classDSPCore_1a6bce3f37ad26e3b31a58ea795bf91646" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void DSPCore::allocate_and_copy_first_stage_host</definition>
+        <argsstring>(uint32_t num_first_stage_output_samples)</argsstring>
+        <name>allocate_and_copy_first_stage_host</name>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_first_stage_output_samples</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="164" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1abc4429fd656369e9aa845934bc390391" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void DSPCore::allocate_and_copy_second_stage_host</definition>
+        <argsstring>(uint32_t num_second_stage_output_samples)</argsstring>
+        <name>allocate_and_copy_second_stage_host</name>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_second_stage_output_samples</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="165" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classDSPCore_1aabb1fb618fda0bc5efaea279b23f57cd" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void DSPCore::allocate_and_copy_third_stage_host</definition>
+        <argsstring>(uint32_t num_third_stage_output_samples)</argsstring>
+        <name>allocate_and_copy_third_stage_host</name>
+        <param>
+          <type>uint32_t</type>
+          <declname>num_third_stage_output_samples</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="rx_signal_processing/dsp.hpp" line="166" column="1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>Contains the core DSP work done on the GPU. </para>    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="rx_signal_processing/dsp.hpp" line="45" column="1" bodyfile="rx_signal_processing/dsp.hpp" bodystart="45" bodyend="167"/>
+    <listofallmembers>
+      <member refid="classDSPCore_1a069667837335374f97a56a7ee88e759b" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>ack_socket</name></member>
+      <member refid="classDSPCore_1a3612a62c265ebec12db6c7c65c8cb230" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>allocate_and_copy_first_stage_filters</name></member>
+      <member refid="classDSPCore_1a6bce3f37ad26e3b31a58ea795bf91646" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>allocate_and_copy_first_stage_host</name></member>
+      <member refid="classDSPCore_1aea38d20a64eca8d89bd58832e347642e" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>allocate_and_copy_host_output</name></member>
+      <member refid="classDSPCore_1af52a42ade9c1d0938daf3de7db34f736" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>allocate_and_copy_rf_samples</name></member>
+      <member refid="classDSPCore_1a641c6ed5715259c9bec30942ea0f253e" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>allocate_and_copy_second_stage_filter</name></member>
+      <member refid="classDSPCore_1abc4429fd656369e9aa845934bc390391" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>allocate_and_copy_second_stage_host</name></member>
+      <member refid="classDSPCore_1a72f37dbaab1c33c049e11b8a82752ef0" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>allocate_and_copy_third_stage_filter</name></member>
+      <member refid="classDSPCore_1aabb1fb618fda0bc5efaea279b23f57cd" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>allocate_and_copy_third_stage_host</name></member>
+      <member refid="classDSPCore_1a13f98aa8f82f21ca5293e75c280ccd98" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>allocate_first_stage_output</name></member>
+      <member refid="classDSPCore_1a9c1f32d784b4fb7963985496198e8bf4" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>allocate_second_stage_output</name></member>
+      <member refid="classDSPCore_1a17620818c1fe667f8c1a66bd74e4cab5" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>allocate_third_stage_output</name></member>
+      <member refid="classDSPCore_1a16f3bbf6c567573b9a964afc1c7c446b" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>clear_device_and_destroy</name></member>
+      <member refid="classDSPCore_1a4fe0f050730b49c0825013af2b286c1b" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>cuda_postprocessing_callback</name></member>
+      <member refid="classDSPCore_1ae9c1a7d0ac6efe2bb5f64b672d711187" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>data_write_socket</name></member>
+      <member refid="classDSPCore_1ae5e61c5ba7d873467da89ef2cf20076a" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>decimate_kernel_timing_ms</name></member>
+      <member refid="classDSPCore_1adfbc6f228bf7d5d74fe9edfe3cda08fb" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>DSPCore</name></member>
+      <member refid="classDSPCore_1aa8de16dcf618770da5b4641633866a08" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>first_stage_bp_filters_d</name></member>
+      <member refid="classDSPCore_1ad9ed648647f18ef61838f9e4e1ae8864" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>first_stage_output_d</name></member>
+      <member refid="classDSPCore_1a9209790582acffb348b6745ca08644b6" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>first_stage_output_h</name></member>
+      <member refid="classDSPCore_1a80f4d5b63b2a3b94c3b512328c05dd9a" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>get_cuda_stream</name></member>
+      <member refid="classDSPCore_1a595cf8b5e0f9b607fab599c80d3767c3" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>get_decimate_timing</name></member>
+      <member refid="classDSPCore_1a5a9be7f95a26ce8ecc7aac08b01a0a63" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>get_first_stage_bp_filters_p</name></member>
+      <member refid="classDSPCore_1a7c453fcf7549500488cae4fad46a0f67" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>get_first_stage_output_h</name></member>
+      <member refid="classDSPCore_1a5ba2416cd671bcbf2adc813d1aeead9c" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>get_first_stage_output_p</name></member>
+      <member refid="classDSPCore_1ac64ec497869bcfd0aa5105ca34a87524" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>get_num_antennas</name></member>
+      <member refid="classDSPCore_1af4607144adb61ddf6235cb68dfadf5c4" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>get_num_first_stage_samples_per_antenna</name></member>
+      <member refid="classDSPCore_1a41671ab0fd681b76ca40cef3a56b18f5" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>get_num_second_stage_samples_per_antenna</name></member>
+      <member refid="classDSPCore_1ae7428ad7f4f828f6b388c94327afb21d" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>get_num_third_stage_samples_per_antenna</name></member>
+      <member refid="classDSPCore_1ae5201569e1c75400e2b762055f57c4ee" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>get_rf_samples_p</name></member>
+      <member refid="classDSPCore_1a209535629034fb04f4c88e554721b68c" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>get_rx_freqs</name></member>
+      <member refid="classDSPCore_1a57a22b5dd3648fb7732121d2c659a02f" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>get_second_stage_filter_p</name></member>
+      <member refid="classDSPCore_1a5c5390b5bc22121a8c5658a4e8ab469e" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>get_second_stage_output_h</name></member>
+      <member refid="classDSPCore_1a1df494cd3b9929874241461f6413e938" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>get_second_stage_output_p</name></member>
+      <member refid="classDSPCore_1a3bfe901acc35e9429bbceb10680e177f" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>get_sequence_num</name></member>
+      <member refid="classDSPCore_1abf9816074d1a80a19faa2d5a9bc680c2" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>get_third_stage_filter_p</name></member>
+      <member refid="classDSPCore_1a46129f4d3b9897f1e8ee15f18351f680" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>get_third_stage_output_h</name></member>
+      <member refid="classDSPCore_1adee20e562d54a4e91d2b0ee4339272e9" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>get_third_stage_output_p</name></member>
+      <member refid="classDSPCore_1a2d608e5f7262dad49d757df4526ceefa" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>get_total_timing</name></member>
+      <member refid="classDSPCore_1afd910211137837ca9a01495cfbe36b19" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>host_output_h</name></member>
+      <member refid="classDSPCore_1ad3be4abdacd8e8531d086600f715ae22" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>initial_memcpy_callback</name></member>
+      <member refid="classDSPCore_1a0c7d7766d50437022e842434e8fa6f20" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>initial_start</name></member>
+      <member refid="classDSPCore_1ae5f078c5a431bc48c86a29c16836749a" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>kernel_start</name></member>
+      <member refid="classDSPCore_1ad910b95f4335e666b1cb218a98068fff" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>mem_time_ms</name></member>
+      <member refid="classDSPCore_1a0e634d61cc6ff5242007e46d4e43a542" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>mem_transfer_end</name></member>
+      <member refid="classDSPCore_1a1b1af1c38d69c7c7160078e8819c9269" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>num_antennas</name></member>
+      <member refid="classDSPCore_1aa7f3f3a98e382f8059edaec65149be52" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>num_first_stage_samples_per_antenna</name></member>
+      <member refid="classDSPCore_1a959c0f166ea9b06cbbabf91089548540" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>num_second_stage_samples_per_antenna</name></member>
+      <member refid="classDSPCore_1adbd9fd85dd6846be0ae708b49195fb0c" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>num_third_stage_samples_per_antenna</name></member>
+      <member refid="classDSPCore_1a6e1d6a5fe0b345d243e563abf9537722" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>rf_samples_d</name></member>
+      <member refid="classDSPCore_1a75a9a634f86df731c171968c0a522575" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>rx_freqs</name></member>
+      <member refid="classDSPCore_1a699ab40e01dcb163ecf5065a287095d6" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>second_stage_filter_d</name></member>
+      <member refid="classDSPCore_1a858ec0873471d3b22c0d1de2851998d0" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>second_stage_output_d</name></member>
+      <member refid="classDSPCore_1a256c51bc26176525d371cb373e949b31" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>second_stage_output_h</name></member>
+      <member refid="classDSPCore_1a011c08289c27ebb26f0c438c96658729" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>send_ack</name></member>
+      <member refid="classDSPCore_1a642c93a611bde02a050e1a68f7590a77" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>send_processed_data</name></member>
+      <member refid="classDSPCore_1a55ce6f498d2b8b89a50d2082d068967b" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>send_timing</name></member>
+      <member refid="classDSPCore_1ae082b820022b09351f1d07112c3a1961" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>sequence_num</name></member>
+      <member refid="classDSPCore_1a607b8c25aa2c2f2b1716fa5c198247cd" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>shr_mem</name></member>
+      <member refid="classDSPCore_1af3482064dfd4c619cc5898495a20ef86" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>start_decimate_timing</name></member>
+      <member refid="classDSPCore_1af511e9ad1ee50c4783b7b86e8fb891e1" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>stop</name></member>
+      <member refid="classDSPCore_1aa25eed35e1251ce6fd127fd6785874ac" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>stop_timing</name></member>
+      <member refid="classDSPCore_1a2de6e1a2327cec8738692e6e57db9d83" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>stream</name></member>
+      <member refid="classDSPCore_1aa77712ce39416b61478679174780e83a" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>third_stage_filter_d</name></member>
+      <member refid="classDSPCore_1a6b9c10a1dadaaa70b21c4a6ae09b582f" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>third_stage_output_d</name></member>
+      <member refid="classDSPCore_1ae33cb35963981771c36c6e104d50df69" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>third_stage_output_h</name></member>
+      <member refid="classDSPCore_1a6089983f74693fa6b4f007670f39d0c7" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>timing_socket</name></member>
+      <member refid="classDSPCore_1af9098ead8e7a6255d4cd435a2babae57" prot="private" virt="non-virtual"><scope>DSPCore</scope><name>total_process_timing_ms</name></member>
+      <member refid="classDSPCore_1a0cc0b50c5d49e1e3c6bafaeac7d55b60" prot="public" virt="non-virtual"><scope>DSPCore</scope><name>~DSPCore</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

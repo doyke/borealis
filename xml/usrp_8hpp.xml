@@ -1,0 +1,134 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.11">
+  <compounddef id="usrp_8hpp" kind="file" language="C++">
+    <compoundname>usrp.hpp</compoundname>
+    <includes local="no">uhd/usrp/multi_usrp.hpp</includes>
+    <includes local="yes">utils/driver_options/driveroptions.hpp</includes>
+    <includedby refid="n200__driver_8cpp" local="yes">usrp_drivers/n200/n200_driver.cpp</includedby>
+    <includedby refid="usrp_8cpp" local="yes">usrp_drivers/n200/usrp.cpp</includedby>
+    <incdepgraph>
+      <node id="103">
+        <label>utils/driver_options/driveroptions.hpp</label>
+      </node>
+      <node id="101">
+        <label>usrp_drivers/n200/usrp.hpp</label>
+        <link refid="usrp.hpp"/>
+        <childnode refid="102" relation="include">
+        </childnode>
+        <childnode refid="103" relation="include">
+        </childnode>
+      </node>
+      <node id="102">
+        <label>uhd/usrp/multi_usrp.hpp</label>
+      </node>
+    </incdepgraph>
+    <innerclass refid="classUSRP" prot="public">USRP</innerclass>
+    <innerclass refid="classTXMetadata" prot="public">TXMetadata</innerclass>
+    <innerclass refid="classRXMetadata" prot="public">RXMetadata</innerclass>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="2"><highlight class="comment">Copyright<sp/>2016<sp/>SuperDARN</highlight></codeline>
+<codeline lineno="3"><highlight class="comment"></highlight></codeline>
+<codeline lineno="4"><highlight class="comment">See<sp/>LICENSE<sp/>for<sp/>details.</highlight></codeline>
+<codeline lineno="5"><highlight class="comment"></highlight></codeline>
+<codeline lineno="6"><highlight class="comment"><sp/><sp/>@file<sp/>usrp.hpp</highlight></codeline>
+<codeline lineno="7"><highlight class="comment"><sp/><sp/>This<sp/>file<sp/>contains<sp/>class<sp/>declarations<sp/>for<sp/>ease<sp/>of<sp/>use<sp/>of<sp/>USRP<sp/>related<sp/>features.</highlight></codeline>
+<codeline lineno="8"><highlight class="comment"></highlight></codeline>
+<codeline lineno="9"><highlight class="comment">*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight><highlight class="preprocessor">#ifndef<sp/>USRP_H</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>USRP_H</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;uhd/usrp/multi_usrp.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;utils/driver_options/driveroptions.hpp&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight></codeline>
+<codeline lineno="20" refid="classUSRP" refkind="compound"><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classUSRP" kindref="compound">USRP</ref>{</highlight></codeline>
+<codeline lineno="21"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="22"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">explicit</highlight><highlight class="normal"><sp/><ref refid="classUSRP_1ae0816425ed6a064d7f94ffd14206741e" kindref="member">USRP</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>DriverOptions&amp;<sp/>driver_options);</highlight></codeline>
+<codeline lineno="23"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="classUSRP_1a6c0cf4ec10d63df0feb833ca7193f9c5" kindref="member">set_usrp_clock_source</ref>(std::string<sp/>source);</highlight></codeline>
+<codeline lineno="24"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="classUSRP_1adc7b4350ee14217a1cc0bce7b4083672" kindref="member">set_tx_subdev</ref>(std::string<sp/>tx_subdev);</highlight></codeline>
+<codeline lineno="25"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><ref refid="classUSRP_1ad7a86c9090ae50a26fe0ead782f680b1" kindref="member">set_tx_rate</ref>(</highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>tx_rate,<sp/>std::vector&lt;size_t&gt;<sp/>chs);</highlight></codeline>
+<codeline lineno="26"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><ref refid="classUSRP_1a2330eadde3feb6577b25f34372613084" kindref="member">get_tx_rate</ref>(uint32_t<sp/>channel=0);</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><ref refid="classUSRP_1af0656e9048b499789d610b8a1fa4fd38" kindref="member">set_tx_center_freq</ref>(</highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>freq,<sp/>std::vector&lt;size_t&gt;<sp/>chs);</highlight></codeline>
+<codeline lineno="28"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="classUSRP_1a185f6c94e133d06540956f9f76fd8552" kindref="member">set_main_rx_subdev</ref>(std::string<sp/>main_subdev);</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="classUSRP_1a0c4796b6b551a7dacb5a47250b1ead87" kindref="member">set_interferometer_rx_subdev</ref>(std::string<sp/>interferometer_subdev,</highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uint32_t<sp/>interferometer_antenna_count);</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><ref refid="classUSRP_1afa1efa80fcb31a8422ce118189d0e6e3" kindref="member">set_rx_rate</ref>(</highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>rx_rate,<sp/>std::vector&lt;size_t&gt;<sp/>rx_chs);</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><ref refid="classUSRP_1a20942898561a12aa4c14de69cf5cc341" kindref="member">set_rx_center_freq</ref>(</highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>freq,<sp/>std::vector&lt;size_t&gt;<sp/>chs);</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="classUSRP_1a36831b76a4b0085eb7ce7a6d68d844e2" kindref="member">set_time_source</ref>(std::string<sp/>source);</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="classUSRP_1a06dc19d3b5275b043dac6d9578311287" kindref="member">check_ref_locked</ref>();</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="classUSRP_1abf842a3e9a41b6bf509d195fef659d05" kindref="member">set_scope_sync</ref>(uhd::time_spec_t<sp/>scope_high);</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="classUSRP_1af892eb152a034b58353b16d2bbb587bf" kindref="member">set_atten</ref>(uhd::time_spec_t<sp/>atten_high);</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="classUSRP_1a2abaced689292f18466e984719c07790" kindref="member">set_tr</ref>(uhd::time_spec_t<sp/>tr_high);</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="classUSRP_1a8df601f93bd92e3b3fb7acf52988ed3f" kindref="member">clear_scope_sync</ref>(uhd::time_spec_t<sp/>scope_low);</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="classUSRP_1a12d3e326cd03e0ddfea6edc29aa1b80d" kindref="member">clear_atten</ref>(uhd::time_spec_t<sp/>atten_low);</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="classUSRP_1a61033961122a1afdfa9b6a50bdfae1f1" kindref="member">clear_tr</ref>(uhd::time_spec_t<sp/>tr_low);</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="classUSRP_1ae8025671f588c43b5768fb4209435896" kindref="member">clear_command_times</ref>();</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"><sp/><sp/><sp/><sp/>uhd::time_spec_t<sp/><ref refid="classUSRP_1a42d2fdd63623ec898a77ffecfeb91377" kindref="member">get_current_usrp_time</ref>();</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><sp/><sp/><sp/><sp/>uhd::rx_streamer::sptr<sp/><ref refid="classUSRP_1a0466c9207c6a06169adfdfbbc91b5d6e" kindref="member">get_usrp_rx_stream</ref>(uhd::stream_args_t<sp/>stream_args);</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"><sp/><sp/><sp/><sp/>uhd::tx_streamer::sptr<sp/><ref refid="classUSRP_1a38d58a62df34bfe1204297b13269265d" kindref="member">get_usrp_tx_stream</ref>(uhd::stream_args_t<sp/>stream_args);</highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//std::vector&lt;size_t&gt;<sp/>get_receive_channels();</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/><sp/><sp/><sp/>uhd::usrp::multi_usrp::sptr<sp/><ref refid="classUSRP_1ad63412ef4f989f41fd042ba3398857fd" kindref="member">get_usrp</ref>();</highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/><sp/><sp/>std::string<sp/><ref refid="classUSRP_1a35b40fc53946a2d9c7c42c4546d195a3" kindref="member">to_string</ref>(std::vector&lt;size_t&gt;<sp/>tx_chs,<sp/>std::vector&lt;size_t&gt;<sp/>rx_chs);</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"></highlight></codeline>
+<codeline lineno="49"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">private</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="51"><highlight class="normal"><sp/><sp/><sp/><sp/>uhd::usrp::multi_usrp::sptr<sp/>usrp_;</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"></highlight></codeline>
+<codeline lineno="54"><highlight class="normal"><sp/><sp/><sp/><sp/>std::string<sp/>gpio_bank_;</highlight></codeline>
+<codeline lineno="55"><highlight class="normal"></highlight></codeline>
+<codeline lineno="57"><highlight class="normal"><sp/><sp/><sp/><sp/>uint32_t<sp/>mboard_;</highlight></codeline>
+<codeline lineno="58"><highlight class="normal"></highlight></codeline>
+<codeline lineno="60"><highlight class="normal"><sp/><sp/><sp/><sp/>uint32_t<sp/>scope_sync_mask_;</highlight></codeline>
+<codeline lineno="61"><highlight class="normal"></highlight></codeline>
+<codeline lineno="63"><highlight class="normal"><sp/><sp/><sp/><sp/>uint32_t<sp/>atten_mask_;</highlight></codeline>
+<codeline lineno="64"><highlight class="normal"></highlight></codeline>
+<codeline lineno="66"><highlight class="normal"><sp/><sp/><sp/><sp/>uint32_t<sp/>tr_mask_;</highlight></codeline>
+<codeline lineno="67"><highlight class="normal"></highlight></codeline>
+<codeline lineno="69"><highlight class="comment">/*<sp/><sp/><sp/><sp/>std::vector&lt;size_t&gt;<sp/>receive_channels;</highlight></codeline>
+<codeline lineno="70"><highlight class="comment"></highlight></codeline>
+<codeline lineno="71"><highlight class="comment"><sp/><sp/><sp/><sp/>std::vector&lt;size_t&gt;<sp/>create_receive_channels(uint32_t<sp/>main_antenna_count,</highlight></codeline>
+<codeline lineno="72"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uint32_t<sp/>interferometer_antenna_count);*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="73"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>set_atr_gpios();</highlight></codeline>
+<codeline lineno="74"><highlight class="normal"></highlight></codeline>
+<codeline lineno="75"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="76"><highlight class="normal"></highlight></codeline>
+<codeline lineno="83" refid="classTXMetadata" refkind="compound"><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classTXMetadata" kindref="compound">TXMetadata</ref>{</highlight></codeline>
+<codeline lineno="84"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="85"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classTXMetadata" kindref="compound">TXMetadata</ref>();</highlight></codeline>
+<codeline lineno="86"><highlight class="normal"><sp/><sp/><sp/><sp/>uhd::tx_metadata_t<sp/>get_md();</highlight></codeline>
+<codeline lineno="87"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>set_start_of_burst(</highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>start_of_burst);</highlight></codeline>
+<codeline lineno="88"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>set_end_of_burst(</highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>end_of_burst);</highlight></codeline>
+<codeline lineno="89"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>set_has_time_spec(</highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>has_time_spec);</highlight></codeline>
+<codeline lineno="90"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>set_time_spec(uhd::time_spec_t<sp/>time_spec);</highlight></codeline>
+<codeline lineno="91"><highlight class="normal"></highlight></codeline>
+<codeline lineno="92"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">private</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="94"><highlight class="normal"><sp/><sp/><sp/><sp/>uhd::tx_metadata_t<sp/>md_;</highlight></codeline>
+<codeline lineno="95"><highlight class="normal"></highlight></codeline>
+<codeline lineno="96"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="97"><highlight class="normal"></highlight></codeline>
+<codeline lineno="104" refid="classRXMetadata" refkind="compound"><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classRXMetadata" kindref="compound">RXMetadata</ref>{</highlight></codeline>
+<codeline lineno="105"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="106"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classRXMetadata" kindref="compound">RXMetadata</ref>()<sp/>=<sp/></highlight><highlight class="keywordflow">default</highlight><highlight class="normal">;<sp/><sp/></highlight><highlight class="comment">//<sp/>Blank<sp/>ctor<sp/>generated<sp/>by<sp/>compiler</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="107"><highlight class="normal"><sp/><sp/><sp/><sp/>uhd::rx_metadata_t&amp;<sp/>get_md();</highlight></codeline>
+<codeline lineno="108"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>get_end_of_burst();</highlight></codeline>
+<codeline lineno="109"><highlight class="normal"><sp/><sp/><sp/><sp/>uhd::rx_metadata_t::error_code_t<sp/>get_error_code();</highlight></codeline>
+<codeline lineno="110"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">size_t</highlight><highlight class="normal"><sp/>get_fragment_offset();</highlight></codeline>
+<codeline lineno="111"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>get_has_time_spec();</highlight></codeline>
+<codeline lineno="112"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>get_out_of_sequence();</highlight></codeline>
+<codeline lineno="113"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>get_start_of_burst();</highlight></codeline>
+<codeline lineno="114"><highlight class="normal"><sp/><sp/><sp/><sp/>uhd::time_spec_t<sp/>get_time_spec();<sp/></highlight><highlight class="comment">//<sp/>REVIEW<sp/>#6<sp/>TODO:<sp/>add<sp/>getter<sp/>for<sp/>more_fragments<sp/>boolean</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="115"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>REPLY<sp/>can<sp/>discuss.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="116"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">private</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="118"><highlight class="normal"><sp/><sp/><sp/><sp/>uhd::rx_metadata_t<sp/>md_;</highlight></codeline>
+<codeline lineno="119"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="120"><highlight class="normal"></highlight></codeline>
+<codeline lineno="121"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="122"><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="usrp_drivers/n200/usrp.hpp"/>
+  </compounddef>
+</doxygen>

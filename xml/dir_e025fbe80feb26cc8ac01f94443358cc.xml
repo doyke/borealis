@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.11">
+  <compounddef id="dir_e025fbe80feb26cc8ac01f94443358cc" kind="dir">
+    <compoundname>usrp_drivers</compoundname>
+    <innerdir refid="dir_389a511f2eb3eecc85e1ca04142aa9b0">usrp_drivers/n200</innerdir>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="usrp_drivers/"/>
+  </compounddef>
+</doxygen>

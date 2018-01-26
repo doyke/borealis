@@ -1,0 +1,669 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.11">
+  <compounddef id="dsp_8cu" kind="file" language="C++">
+    <compoundname>dsp.cu</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline><highlight class="normal">/*</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">Copyright<sp/>2017<sp/>SuperDARN<sp/>Canada</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">See<sp/>LICENSE<sp/>for<sp/>details</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>\file<sp/>dsp.cu</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>This<sp/>file<sp/>contains<sp/>the<sp/>implementation<sp/>for<sp/>the<sp/>all<sp/>the<sp/>needed<sp/>GPU<sp/>DSP<sp/>work.</highlight></codeline>
+<codeline><highlight class="normal">*/</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">#include<sp/>&quot;dsp.hpp&quot;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&quot;utils/protobuf/sigprocpacket.pb.h&quot;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&quot;utils/protobuf/processeddata.pb.h&quot;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&quot;utils/shared_macros/shared_macros.hpp&quot;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;iostream&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;cstdlib&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;fstream&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;string&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;sstream&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;cuComplex.h&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;chrono&gt;</highlight></codeline>
+<codeline><highlight class="normal">#include<sp/>&lt;thread&gt;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">//TODO(keith):<sp/>decide<sp/>on<sp/>handing<sp/>gpu<sp/>errors</highlight></codeline>
+<codeline><highlight class="normal">//TODO(keith):<sp/>potentially<sp/>add<sp/>multigpu<sp/>support</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">//This<sp/>keep<sp/>postprocess<sp/>local<sp/>to<sp/>this<sp/>file.</highlight></codeline>
+<codeline><highlight class="normal">namespace<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Sends<sp/>an<sp/>acknowledgment<sp/>to<sp/>the<sp/>radar<sp/>control<sp/>and<sp/>starts<sp/>the<sp/>timing<sp/>after<sp/>the</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>RF<sp/>samples<sp/>have<sp/>been<sp/>copied.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@param[in]<sp/><sp/>stream<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CUDA<sp/>stream<sp/>this<sp/>callback<sp/>is<sp/>associated<sp/>with.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@param[in]<sp/><sp/>status<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Error<sp/>status<sp/>of<sp/>CUDA<sp/>work<sp/>in<sp/>the<sp/>stream.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@param[in]<sp/><sp/>processing_data<sp/><sp/>A<sp/>pointer<sp/>to<sp/>the<sp/>DSPCore<sp/>associated<sp/>with<sp/>this<sp/>CUDA<sp/>stream.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>void<sp/>CUDART_CB<sp/>initial_memcpy_callback_handler(cudaStream_t<sp/>stream,<sp/>cudaError_t<sp/>status,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>void<sp/>*processing_data)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>gpuErrchk(status);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>imc<sp/>=<sp/>[processing_data]()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>auto<sp/>dp<sp/>=<sp/>static_cast&lt;DSPCore*&gt;(processing_data);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>dp-&gt;send_ack();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>dp-&gt;start_decimate_timing();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>DEBUG_MSG(COLOR_RED(&quot;Finished<sp/>initial<sp/>memcpy<sp/>handler<sp/>for<sp/>sequence<sp/>#&quot;<sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>dp-&gt;get_sequence_num()<sp/>&lt;&lt;<sp/>&quot;.<sp/>Thread<sp/>should<sp/>exit<sp/>here&quot;));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>};</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::thread<sp/>start_imc(imc);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>start_imc.join();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>void<sp/>create_processed_data_packet(processeddata::ProcessedData<sp/>&amp;pd,<sp/>DSPCore*<sp/>dp)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>for(uint32_t<sp/>i=0;<sp/>i&lt;dp-&gt;get_rx_freqs().size();<sp/>i++)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>auto<sp/>dataset<sp/>=<sp/>pd.add_outputdataset();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>#ifdef<sp/>DEBUG</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>auto<sp/>add_debug_data<sp/>=<sp/>[dataset,i](std::string<sp/>stage_name,<sp/>cuComplex<sp/>*output_p,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uint32_t<sp/>num_antennas,<sp/>uint32_t<sp/>num_samps_per_antenna)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>auto<sp/>debug_samples<sp/>=<sp/>dataset-&gt;add_debugsamples();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>debug_samples-&gt;set_stagename(stage_name);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>auto<sp/>stage_output<sp/>=<sp/>output_p;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>auto<sp/>stage_samps_per_set<sp/>=<sp/>num_antennas<sp/>*<sp/>num_samps_per_antenna;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for<sp/>(uint32_t<sp/>j=0;<sp/>j&lt;num_antennas;<sp/>j++){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>auto<sp/>antenna_data<sp/>=<sp/>debug_samples-&gt;add_antennadata();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>for(uint32_t<sp/>k=0;<sp/>k&lt;num_samps_per_antenna;<sp/>k++)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>auto<sp/>idx<sp/>=<sp/>i<sp/>*<sp/>stage_samps_per_set<sp/>+<sp/>j<sp/>*<sp/>num_samps_per_antenna<sp/>+<sp/>k;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>auto<sp/>antenna_samp<sp/>=<sp/>antenna_data-&gt;add_antennasamples();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>antenna_samp-&gt;set_real(stage_output[idx].x);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>antenna_samp-&gt;set_imag(stage_output[idx].y);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>};</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>add_debug_data(&quot;stage_1&quot;,dp-&gt;get_first_stage_output_h(),dp-&gt;get_num_antennas(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>dp-&gt;get_num_first_stage_samples_per_antenna());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>add_debug_data(&quot;stage_2&quot;,dp-&gt;get_second_stage_output_h(),dp-&gt;get_num_antennas(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>dp-&gt;get_num_second_stage_samples_per_antenna());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>add_debug_data(&quot;stage_3&quot;,dp-&gt;get_third_stage_output_h(),dp-&gt;get_num_antennas(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>dp-&gt;get_num_third_stage_samples_per_antenna());</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>#endif</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>DEBUG_MSG(&quot;Created<sp/>dataset<sp/>for<sp/>sequence<sp/>#&quot;<sp/>&lt;&lt;<sp/>COLOR_RED(dp-&gt;get_sequence_num()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Spawns<sp/>the<sp/>postprocessing<sp/>work<sp/>after<sp/>all<sp/>work<sp/>in<sp/>the<sp/>CUDA<sp/>stream<sp/>is<sp/>completed.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@param[in]<sp/><sp/>stream<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CUDA<sp/>stream<sp/>this<sp/>callback<sp/>is<sp/>associated<sp/>with.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@param[in]<sp/><sp/>status<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Error<sp/>status<sp/>of<sp/>CUDA<sp/>work<sp/>in<sp/>the<sp/>stream.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>@param[in]<sp/><sp/>processing_data<sp/><sp/>A<sp/>pointer<sp/>to<sp/>the<sp/>DSPCore<sp/>associated<sp/>with<sp/>this<sp/>CUDA<sp/>stream.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>The<sp/>callback<sp/>itself<sp/>cannot<sp/>call<sp/>anything<sp/>CUDA<sp/>related<sp/>as<sp/>it<sp/>may<sp/>deadlock.<sp/>It<sp/>can,<sp/>however</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*<sp/>spawn<sp/>a<sp/>new<sp/>thread<sp/>and<sp/>then<sp/>exit<sp/>gracefully,<sp/>allowing<sp/>the<sp/>thread<sp/>to<sp/>do<sp/>the<sp/>work.</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>void<sp/>CUDART_CB<sp/>postprocess(cudaStream_t<sp/>stream,<sp/>cudaError_t<sp/>status,<sp/>void<sp/>*processing_data)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>gpuErrchk(status);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>auto<sp/>pp<sp/>=<sp/>[processing_data]()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>auto<sp/>dp<sp/>=<sp/>static_cast&lt;DSPCore*&gt;(processing_data);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>dp-&gt;stop_timing();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>dp-&gt;send_timing();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>processeddata::ProcessedData<sp/>pd;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>TIMEIT_IF_DEBUG(&quot;Fill<sp/>+<sp/>send<sp/>processed<sp/>data<sp/>time<sp/>&quot;,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>[&amp;]()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>create_processed_data_packet(pd,dp);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>//dp-&gt;send_processed_data(pd);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>DEBUG_MSG(&quot;Cuda<sp/>kernel<sp/>timing:<sp/>&quot;<sp/>&lt;&lt;<sp/>COLOR_GREEN(dp-&gt;get_decimate_timing())<sp/>&lt;&lt;<sp/>&quot;ms&quot;);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>DEBUG_MSG(&quot;Complete<sp/>process<sp/>timing:<sp/>&quot;<sp/>&lt;&lt;<sp/>COLOR_GREEN(dp-&gt;get_total_timing())<sp/>&lt;&lt;<sp/>&quot;ms&quot;);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>auto<sp/>sq_num<sp/>=<sp/>dp-&gt;get_sequence_num();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>delete<sp/>dp;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>DEBUG_MSG(COLOR_RED(&quot;Deleted<sp/>DP<sp/>in<sp/>postprocess<sp/>for<sp/>sequence<sp/>#&quot;<sp/>&lt;&lt;<sp/>sq_num</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>&quot;.<sp/>Thread<sp/>should<sp/>terminate<sp/>here.&quot;));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>};</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::thread<sp/>start_pp(pp);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>start_pp.detach();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>//TODO(keith):<sp/>add<sp/>copy<sp/>to<sp/>host<sp/>and<sp/>final<sp/>process<sp/>details</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Gets<sp/>the<sp/>properties<sp/>of<sp/>each<sp/>GPU<sp/>in<sp/>the<sp/>system.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@return<sp/><sp/><sp/><sp/><sp/>The<sp/>gpu<sp/>properties.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">std::vector&lt;cudaDeviceProp&gt;<sp/>get_gpu_properties()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;cudaDeviceProp&gt;<sp/>gpu_properties;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>int<sp/>num_devices<sp/>=<sp/>0;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaGetDeviceCount(&amp;num_devices));</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>for(int<sp/>i=0;<sp/>i&lt;<sp/>num_devices;<sp/>i++)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>cudaDeviceProp<sp/>properties;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>gpuErrchk(cudaGetDeviceProperties(&amp;properties,<sp/>i));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>gpu_properties.push_back(properties);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>return<sp/>gpu_properties;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Prints<sp/>the<sp/>properties<sp/>of<sp/>each<sp/>cudaDeviceProp<sp/>in<sp/>the<sp/>vector.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>gpu_properties<sp/><sp/>A<sp/>vector<sp/>of<sp/>cudaDeviceProp<sp/>structs.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>More<sp/>info<sp/>on<sp/>properties<sp/>and<sp/>calculations<sp/>here:</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>https://devblogs.nvidia.com/parallelforall/how-query-device-properties-and-handle-errors-cuda-cc/</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">void<sp/>print_gpu_properties(std::vector&lt;cudaDeviceProp&gt;<sp/>gpu_properties)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>for(auto<sp/>i<sp/>:<sp/>gpu_properties)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>&quot;Device<sp/>name:<sp/>&quot;<sp/>&lt;&lt;<sp/>i.name<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/>Max<sp/>grid<sp/>size<sp/>x:<sp/>&quot;<sp/>&lt;&lt;<sp/>i.maxGridSize[0]<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/>Max<sp/>grid<sp/>size<sp/>y:<sp/>&quot;<sp/>&lt;&lt;<sp/>i.maxGridSize[1]<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/>Max<sp/>grid<sp/>size<sp/>z:<sp/>&quot;<sp/>&lt;&lt;<sp/>i.maxGridSize[2]<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/>Max<sp/>threads<sp/>per<sp/>block:<sp/>&quot;<sp/>&lt;&lt;<sp/>i.maxThreadsPerBlock</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/>Max<sp/>size<sp/>of<sp/>block<sp/>dimension<sp/>x:<sp/>&quot;<sp/>&lt;&lt;<sp/>i.maxThreadsDim[0]</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/>Max<sp/>size<sp/>of<sp/>block<sp/>dimension<sp/>y:<sp/>&quot;<sp/>&lt;&lt;<sp/>i.maxThreadsDim[1]</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/>Max<sp/>size<sp/>of<sp/>block<sp/>dimension<sp/>z:<sp/>&quot;<sp/>&lt;&lt;<sp/>i.maxThreadsDim[2]</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/>Memory<sp/>Clock<sp/>Rate<sp/>(GHz):<sp/>&quot;<sp/>&lt;&lt;<sp/>i.memoryClockRate/1e6</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/>Memory<sp/>Bus<sp/>Width<sp/>(bits):<sp/>&quot;<sp/>&lt;&lt;<sp/>i.memoryBusWidth</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/>Peak<sp/>Memory<sp/>Bandwidth<sp/>(GB/s):<sp/>&quot;<sp/>&lt;&lt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/>2.0*i.memoryClockRate*(i.memoryBusWidth/8)/1.0e6<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/>Max<sp/>shared<sp/>memory<sp/>per<sp/>block:<sp/>&quot;<sp/>&lt;&lt;<sp/>i.sharedMemPerBlock</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>&quot;<sp/><sp/>Warpsize:<sp/>&quot;<sp/>&lt;&lt;<sp/>i.warpSize<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Initializes<sp/>the<sp/>parameters<sp/>needed<sp/>in<sp/>order<sp/>to<sp/>do<sp/>asynchronous<sp/>DSP<sp/>processing.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param<sp/><sp/><sp/><sp/><sp/><sp/>ack_s<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>the<sp/>socket<sp/>used<sp/>for<sp/>acknowledging<sp/>when<sp/>the<sp/>transfer<sp/>of<sp/>RF</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>samples<sp/>has<sp/>completed.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>timing_s<sp/><sp/><sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>the<sp/>socket<sp/>used<sp/>for<sp/>reporting<sp/>GPU<sp/>kernel<sp/>timing.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>sq_num<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>The<sp/>pulse<sp/>sequence<sp/>number<sp/>for<sp/>which<sp/>will<sp/>be<sp/>acknowledged.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>shr_mem_name<sp/><sp/>The<sp/>char<sp/>string<sp/>used<sp/>to<sp/>open<sp/>a<sp/>section<sp/>of<sp/>shared<sp/>memory<sp/>with<sp/>RF</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>samples.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>The<sp/>constructor<sp/>creates<sp/>a<sp/>new<sp/>CUDA<sp/>stream<sp/>and<sp/>initializes<sp/>the<sp/>timing<sp/>events.<sp/>It<sp/>then<sp/>opens</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>the<sp/>shared<sp/>memory<sp/>with<sp/>the<sp/>received<sp/>RF<sp/>samples<sp/>for<sp/>a<sp/>pulse<sp/>sequence.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">DSPCore::DSPCore(zmq::socket_t<sp/>*ack_s,<sp/>zmq::socket_t<sp/>*timing_s,<sp/>zmq::socket_t<sp/>*data_s,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uint32_t<sp/>sq_num,<sp/>std::string<sp/>shr_mem_name,<sp/>std::vector&lt;double&gt;<sp/>freqs)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>sequence_num<sp/>=<sp/>sq_num;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ack_socket<sp/>=<sp/>ack_s;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>timing_socket<sp/>=<sp/>timing_s;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>data_write_socket<sp/>=<sp/>data_s;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>rx_freqs<sp/>=<sp/>freqs;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>//https://devblogs.nvidia.com/parallelforall/gpu-pro-tip-cuda-7-streams-simplify-concurrency/</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaStreamCreate(&amp;stream));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaEventCreate(&amp;initial_start));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaEventCreate(&amp;kernel_start));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaEventCreate(&amp;stop));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaEventCreate(&amp;mem_transfer_end));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaEventRecord(initial_start,<sp/>stream));</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>shr_mem<sp/>=<sp/>SharedMemoryHandler(shr_mem_name);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>shr_mem.open_shr_mem();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Frees<sp/>all<sp/>associated<sp/>pointers,<sp/>events,<sp/>and<sp/>streams.<sp/>Removes<sp/>and<sp/>deletes<sp/>shared</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>memory.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">DSPCore::~DSPCore()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaFree(rf_samples_d));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaFree(first_stage_bp_filters_d));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaFree(second_stage_filter_d));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaFree(third_stage_filter_d));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaFree(first_stage_output_d));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaFree(second_stage_output_d));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaFree(third_stage_output_d));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaFreeHost(host_output_h));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>#ifdef<sp/>DEBUG</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>gpuErrchk(cudaFreeHost(first_stage_output_h));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>gpuErrchk(cudaFreeHost(second_stage_output_h));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>gpuErrchk(cudaFreeHost(third_stage_output_h));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>#endif</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaEventDestroy(initial_start));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaEventDestroy(kernel_start));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaEventDestroy(stop));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaStreamDestroy(stream));</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>shr_mem.remove_shr_mem();</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>DEBUG_MSG(COLOR_RED(&quot;Running<sp/>deconstructor<sp/>for<sp/>sequence<sp/>#&quot;<sp/>&lt;&lt;<sp/>sequence_num));</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Allocates<sp/>device<sp/>memory<sp/>for<sp/>the<sp/>RF<sp/>samples<sp/>and<sp/>then<sp/>copies<sp/>them<sp/>to<sp/>device.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>total_samples<sp/><sp/>Total<sp/>number<sp/>of<sp/>samples<sp/>to<sp/>copy.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">void<sp/>DSPCore::allocate_and_copy_rf_samples(uint32_t<sp/>total_samples)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>size_t<sp/>rf_samples_size<sp/>=<sp/>total_samples<sp/>*<sp/>sizeof(cuComplex);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaMalloc(&amp;rf_samples_d,<sp/>rf_samples_size));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaMemcpyAsync(rf_samples_d,shr_mem.get_shrmem_addr(),<sp/>rf_samples_size,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>cudaMemcpyHostToDevice,<sp/>stream));</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Allocates<sp/>device<sp/>memory<sp/>for<sp/>the<sp/>first<sp/>stage<sp/>filters<sp/>and<sp/>then<sp/>copies<sp/>them<sp/>to<sp/>the</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>device.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>taps<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>the<sp/>first<sp/>stage<sp/>filter<sp/>taps.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>total_taps<sp/><sp/>The<sp/>total<sp/>number<sp/>of<sp/>taps<sp/>for<sp/>all<sp/>filters.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">void<sp/>DSPCore::allocate_and_copy_first_stage_filters(void<sp/>*taps,<sp/>uint32_t<sp/>total_taps)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>size_t<sp/>first_stage_bp_filters_size<sp/>=<sp/>total_taps<sp/>*<sp/>sizeof(cuComplex);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaMalloc(&amp;first_stage_bp_filters_d,<sp/>first_stage_bp_filters_size));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaMemcpyAsync(first_stage_bp_filters_d,<sp/>taps,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>first_stage_bp_filters_size,<sp/>cudaMemcpyHostToDevice,<sp/>stream));</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Allocates<sp/>device<sp/>memory<sp/>for<sp/>the<sp/>second<sp/>stage<sp/>filter<sp/>and<sp/>then<sp/>copies<sp/>it<sp/>to<sp/>the</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>device.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>taps<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>the<sp/>second<sp/>stage<sp/>filter<sp/>taps.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>total_taps<sp/><sp/>The<sp/>total<sp/>number<sp/>of<sp/>taps<sp/>for<sp/>all<sp/>filters.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">void<sp/>DSPCore::allocate_and_copy_second_stage_filter(void<sp/>*taps,<sp/>uint32_t<sp/>total_taps)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>size_t<sp/>second_stage_filter_size<sp/>=<sp/>total_taps<sp/>*<sp/>sizeof(cuComplex);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaMalloc(&amp;second_stage_filter_d,<sp/>second_stage_filter_size));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaMemcpyAsync(second_stage_filter_d,<sp/>taps,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>second_stage_filter_size,<sp/>cudaMemcpyHostToDevice,<sp/>stream));</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Allocates<sp/>device<sp/>memory<sp/>for<sp/>the<sp/>third<sp/>stage<sp/>filter<sp/>and<sp/>then<sp/>copies<sp/>it<sp/>to<sp/>the</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>device.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>taps<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>A<sp/>pointer<sp/>to<sp/>the<sp/>third<sp/>stage<sp/>filters.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>total_taps<sp/><sp/>The<sp/>total<sp/>number<sp/>of<sp/>taps<sp/>for<sp/>all<sp/>filters.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">void<sp/>DSPCore::allocate_and_copy_third_stage_filter(void<sp/>*taps,<sp/>uint32_t<sp/>total_taps)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>size_t<sp/>third_stage_filter_size<sp/>=<sp/>total_taps<sp/>*<sp/>sizeof(cuComplex);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaMalloc(&amp;third_stage_filter_d,<sp/>third_stage_filter_size));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaMemcpyAsync(third_stage_filter_d,<sp/>taps,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>third_stage_filter_size,<sp/>cudaMemcpyHostToDevice,<sp/>stream));</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Allocates<sp/>device<sp/>memory<sp/>for<sp/>the<sp/>output<sp/>of<sp/>the<sp/>first<sp/>stage<sp/>filters.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>num_first_stage_output_samples<sp/><sp/>The<sp/>total<sp/>number<sp/>of<sp/>output<sp/>samples<sp/>from<sp/>first</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>stage.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">void<sp/>DSPCore::allocate_first_stage_output(uint32_t<sp/>num_first_stage_output_samples)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>size_t<sp/>first_stage_output_size<sp/>=<sp/>num_first_stage_output_samples<sp/>*<sp/>sizeof(cuComplex);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaMalloc(&amp;first_stage_output_d,<sp/>first_stage_output_size));</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Allocates<sp/>device<sp/>memory<sp/>for<sp/>the<sp/>output<sp/>of<sp/>the<sp/>second<sp/>stage<sp/>filters.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>num_second_stage_output_samples<sp/><sp/>The<sp/>total<sp/>number<sp/>of<sp/>output<sp/>samples<sp/>from<sp/>second</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>stage.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">void<sp/>DSPCore::allocate_second_stage_output(uint32_t<sp/>num_second_stage_output_samples)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>size_t<sp/>second_stage_output_size<sp/>=<sp/>num_second_stage_output_samples<sp/>*<sp/>sizeof(cuComplex);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaMalloc(&amp;second_stage_output_d,<sp/>second_stage_output_size));</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Allocates<sp/>device<sp/>memory<sp/>for<sp/>the<sp/>output<sp/>of<sp/>the<sp/>third<sp/>stage<sp/>filters.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>num_third_stage_output_samples<sp/><sp/>The<sp/>total<sp/>number<sp/>of<sp/>output<sp/>samples<sp/>from<sp/>third</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>stage.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">void<sp/>DSPCore::allocate_third_stage_output(uint32_t<sp/>num_third_stage_output_samples)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>size_t<sp/>third_stage_output_size<sp/>=<sp/>num_third_stage_output_samples<sp/>*<sp/>sizeof(cuComplex);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaMalloc(&amp;third_stage_output_d,<sp/>third_stage_output_size));</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Allocates<sp/>host<sp/>memory<sp/>for<sp/>final<sp/>decimated<sp/>samples<sp/>and<sp/>copies<sp/>from<sp/>device<sp/>to<sp/>host.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@param[in]<sp/><sp/>num_host_samples<sp/><sp/>Number<sp/>of<sp/>host<sp/>samples<sp/>to<sp/>copy<sp/>back<sp/>from<sp/>device.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">void<sp/>DSPCore::allocate_and_copy_host_output(uint32_t<sp/>num_host_samples)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>size_t<sp/>host_output_size<sp/>=<sp/>num_host_samples<sp/>*<sp/>sizeof(cuComplex);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaHostAlloc(&amp;host_output_h,<sp/>host_output_size,<sp/>cudaHostAllocDefault));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaMemcpyAsync(host_output_h,<sp/>third_stage_output_d,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>host_output_size,<sp/>cudaMemcpyDeviceToHost,stream));</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">void<sp/>DSPCore::allocate_and_copy_first_stage_host(uint32_t<sp/>num_first_stage_output_samples)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>size_t<sp/>host_output_size<sp/>=<sp/>num_first_stage_output_samples<sp/>*<sp/>sizeof(cuComplex);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaHostAlloc(&amp;first_stage_output_h,<sp/>host_output_size,<sp/>cudaHostAllocDefault));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaMemcpyAsync(first_stage_output_h,<sp/>first_stage_output_d,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>host_output_size,<sp/>cudaMemcpyDeviceToHost,stream));</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">void<sp/>DSPCore::allocate_and_copy_second_stage_host(uint32_t<sp/>num_second_stage_output_samples)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>size_t<sp/>host_output_size<sp/>=<sp/>num_second_stage_output_samples<sp/>*<sp/>sizeof(cuComplex);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaHostAlloc(&amp;second_stage_output_h,<sp/>host_output_size,<sp/>cudaHostAllocDefault));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaMemcpyAsync(second_stage_output_h,<sp/>second_stage_output_d,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>host_output_size,<sp/>cudaMemcpyDeviceToHost,stream));</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">void<sp/>DSPCore::allocate_and_copy_third_stage_host(uint32_t<sp/>num_third_stage_output_samples)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>size_t<sp/>host_output_size<sp/>=<sp/>num_third_stage_output_samples<sp/>*<sp/>sizeof(cuComplex);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaHostAlloc(&amp;third_stage_output_h,<sp/>host_output_size,<sp/>cudaHostAllocDefault));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaMemcpyAsync(third_stage_output_h,<sp/>third_stage_output_d,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>host_output_size,<sp/>cudaMemcpyDeviceToHost,stream));</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Stops<sp/>the<sp/>timers<sp/>that<sp/>the<sp/>constructor<sp/>starts.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">void<sp/>DSPCore::stop_timing()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaEventRecord(stop,<sp/>stream));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaEventSynchronize(stop));</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaEventElapsedTime(&amp;total_process_timing_ms,<sp/>initial_start,<sp/>stop));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaEventElapsedTime(&amp;decimate_kernel_timing_ms,<sp/>kernel_start,<sp/>stop));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaEventElapsedTime(&amp;mem_time_ms,<sp/>initial_start,<sp/>mem_transfer_end));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>DEBUG_MSG(&quot;Cuda<sp/>memcpy<sp/>time:<sp/>&quot;<sp/>&lt;&lt;<sp/>COLOR_GREEN(mem_time_ms)<sp/>&lt;&lt;<sp/>&quot;ms&quot;);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Sends<sp/>the<sp/>GPU<sp/>kernel<sp/>timing<sp/>to<sp/>the<sp/>radar<sp/>control.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>The<sp/>timing<sp/>here<sp/>is<sp/>used<sp/>as<sp/>a<sp/>rate<sp/>limiter,<sp/>so<sp/>that<sp/>the<sp/>GPU<sp/>doesn&apos;t<sp/>become<sp/>backlogged<sp/>with<sp/>data.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>If<sp/>the<sp/>GPU<sp/>is<sp/>overburdened,<sp/>this<sp/>will<sp/>result<sp/>in<sp/>less<sp/>averages,<sp/>but<sp/>the<sp/>system<sp/>wont<sp/>crash.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">void<sp/>DSPCore::send_timing()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>sigprocpacket::SigProcPacket<sp/>sp;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>sp.set_kerneltime(decimate_kernel_timing_ms);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>sp.set_sequence_num(sequence_num);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::string<sp/>s_msg_str;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>sp.SerializeToString(&amp;s_msg_str);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>zmq::message_t<sp/>s_msg(s_msg_str.size());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>memcpy<sp/>((void<sp/>*)<sp/>s_msg.data<sp/>(),<sp/>s_msg_str.c_str(),<sp/>s_msg_str.size());</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>timing_socket-&gt;send(s_msg);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>DEBUG_MSG(COLOR_RED(&quot;Sent<sp/>timing<sp/>after<sp/>processing<sp/>with<sp/>sequence<sp/>#&quot;<sp/>&lt;&lt;<sp/>sequence_num));</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Add<sp/>the<sp/>postprocessing<sp/>callback<sp/>to<sp/>the<sp/>stream.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">void<sp/>DSPCore::cuda_postprocessing_callback(std::vector&lt;double&gt;<sp/>freqs,<sp/>uint32_t<sp/>total_antennas,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uint32_t<sp/>num_output_samples_per_antenna_1,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uint32_t<sp/>num_output_samples_per_antenna_2,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uint32_t<sp/>num_output_samples_per_antenna_3)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>#ifdef<sp/>DEBUG</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>auto<sp/>total_output_samples_1<sp/>=<sp/>num_output_samples_per_antenna_1<sp/>*<sp/>rx_freqs.size()<sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>total_antennas;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>auto<sp/>total_output_samples_2<sp/>=<sp/>num_output_samples_per_antenna_2<sp/>*<sp/>rx_freqs.size()<sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>total_antennas;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>auto<sp/>total_output_samples_3<sp/>=<sp/>num_output_samples_per_antenna_3<sp/>*<sp/>rx_freqs.size()<sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>total_antennas;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>allocate_and_copy_first_stage_host(total_output_samples_1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>allocate_and_copy_second_stage_host(total_output_samples_2);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>allocate_and_copy_third_stage_host(total_output_samples_3);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>num_first_stage_samples_per_antenna<sp/>=<sp/>num_output_samples_per_antenna_1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>num_second_stage_samples_per_antenna<sp/>=<sp/>num_output_samples_per_antenna_2;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>#endif</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>rx_freqs<sp/>=<sp/>freqs;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>num_antennas<sp/>=<sp/>total_antennas;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>num_third_stage_samples_per_antenna<sp/>=<sp/>num_output_samples_per_antenna_3;</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>gpuErrchk(cudaStreamAddCallback(stream,<sp/>postprocess,<sp/>this,<sp/>0));</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>DEBUG_MSG(COLOR_RED(&quot;Added<sp/>stream<sp/>callback<sp/>for<sp/>sequence<sp/>#&quot;<sp/>&lt;&lt;<sp/>sequence_num));</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Sends<sp/>the<sp/>acknowledgment<sp/>to<sp/>the<sp/>radar<sp/>control<sp/>that<sp/>the<sp/>RF<sp/>samples<sp/>have<sp/>been</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>transfered.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>RF<sp/>samples<sp/>of<sp/>one<sp/>pulse<sp/>sequence<sp/>can<sp/>be<sp/>transfered<sp/>asynchronously<sp/>while<sp/>samples<sp/>of<sp/>another<sp/>are</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>being<sp/>processed.<sp/>This<sp/>means<sp/>that<sp/>it<sp/>is<sp/>possible<sp/>to<sp/>start<sp/>running<sp/>a<sp/>new<sp/>pulse<sp/>sequence<sp/>in<sp/>the</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>driver<sp/>as<sp/>soon<sp/>as<sp/>the<sp/>samples<sp/>are<sp/>copied.<sp/>The<sp/>asynchronous<sp/>nature<sp/>means<sp/>only<sp/>timing<sp/>constraint</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>is<sp/>the<sp/>time<sp/>needed<sp/>to<sp/>run<sp/>the<sp/>GPU<sp/>kernels<sp/>for<sp/>decimation.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">void<sp/>DSPCore::send_ack()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>sigprocpacket::SigProcPacket<sp/>sp;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>sp.set_sequence_num(sequence_num);</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::string<sp/>s_msg_str;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>sp.SerializeToString(&amp;s_msg_str);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>zmq::message_t<sp/>s_msg(s_msg_str.size());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>memcpy<sp/>((void<sp/>*)<sp/>s_msg.data(),<sp/>s_msg_str.c_str(),<sp/>s_msg_str.size());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ack_socket-&gt;send(s_msg);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>DEBUG_MSG(COLOR_RED(&quot;Sent<sp/>ack<sp/>after<sp/>copy<sp/>for<sp/>sequence_num<sp/>#&quot;<sp/>&lt;&lt;<sp/>sequence_num));</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">void<sp/>DSPCore::send_processed_data(processeddata::ProcessedData<sp/>&amp;pd)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::string<sp/>p_msg_str;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>pd.SerializeToString(&amp;p_msg_str);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>zmq::message_t<sp/>p_msg(p_msg_str.size());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>memcpy<sp/>((void<sp/>*)<sp/>p_msg.data(),<sp/>p_msg_str.c_str(),<sp/>p_msg_str.size());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>data_write_socket-&gt;send(p_msg);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>DEBUG_MSG(COLOR_RED(&quot;Send<sp/>processed<sp/>data<sp/>to<sp/>data_write<sp/>for<sp/>sequence<sp/>#&quot;<sp/>&lt;&lt;<sp/>sequence_num));</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Starts<sp/>the<sp/>timing<sp/>before<sp/>the<sp/>GPU<sp/>kernels<sp/>execute.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">void<sp/>DSPCore::start_decimate_timing()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaEventRecord(kernel_start,<sp/>stream));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaEventRecord(mem_transfer_end,stream));</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Adds<sp/>the<sp/>callback<sp/>to<sp/>the<sp/>CUDA<sp/>stream<sp/>to<sp/>acknowledge<sp/>the<sp/>RF<sp/>samples<sp/>have<sp/>been<sp/>copied.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">void<sp/>DSPCore::initial_memcpy_callback()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>gpuErrchk(cudaStreamAddCallback(stream,<sp/>initial_memcpy_callback_handler,<sp/>this,<sp/>0));</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Gets<sp/>the<sp/>device<sp/>pointer<sp/>to<sp/>the<sp/>RF<sp/>samples.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@return<sp/><sp/><sp/><sp/><sp/>The<sp/>RF<sp/>samples<sp/>device<sp/>pointer.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">cuComplex*<sp/>DSPCore::get_rf_samples_p(){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>return<sp/>rf_samples_d;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Gets<sp/>the<sp/>device<sp/>pointer<sp/>to<sp/>the<sp/>first<sp/>stage<sp/>bandpass<sp/>filters.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@return<sp/><sp/><sp/><sp/><sp/>The<sp/>first<sp/>stage<sp/>bandpass<sp/>filters<sp/>device<sp/>pointer.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">cuComplex*<sp/>DSPCore::get_first_stage_bp_filters_p(){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>return<sp/>first_stage_bp_filters_d;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Gets<sp/>the<sp/>device<sp/>pointer<sp/>to<sp/>the<sp/>second<sp/>stage<sp/>filters.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@return<sp/><sp/><sp/><sp/><sp/>The<sp/>second<sp/>stage<sp/>filter<sp/>device<sp/>pointer.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">cuComplex*<sp/>DSPCore::get_second_stage_filter_p(){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>return<sp/>second_stage_filter_d;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Gets<sp/>the<sp/>device<sp/>pointer<sp/>to<sp/>the<sp/>third<sp/>stage<sp/>filters.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@return<sp/><sp/><sp/><sp/><sp/>The<sp/>third<sp/>stage<sp/>filter<sp/>device<sp/>pointer.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">cuComplex*<sp/>DSPCore::get_third_stage_filter_p(){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>return<sp/>third_stage_filter_d;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Gets<sp/>the<sp/>device<sp/>pointer<sp/>to<sp/>output<sp/>of<sp/>the<sp/>first<sp/>stage<sp/>decimation.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@return<sp/><sp/><sp/><sp/><sp/>The<sp/>first<sp/>stage<sp/>output<sp/>device<sp/>pointer.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">cuComplex*<sp/>DSPCore::get_first_stage_output_p(){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>return<sp/>first_stage_output_d;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Gets<sp/>the<sp/>device<sp/>pointer<sp/>to<sp/>output<sp/>of<sp/>the<sp/>second<sp/>stage<sp/>decimation.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@return<sp/><sp/><sp/><sp/><sp/>The<sp/>second<sp/>stage<sp/>output<sp/>device<sp/>pointer.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">cuComplex*<sp/>DSPCore::get_second_stage_output_p(){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>return<sp/>second_stage_output_d;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Gets<sp/>the<sp/>device<sp/>pointer<sp/>to<sp/>output<sp/>of<sp/>the<sp/>third<sp/>stage<sp/>decimation.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@return<sp/><sp/><sp/><sp/><sp/>The<sp/>third<sp/>stage<sp/>output<sp/>device<sp/>pointer.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">cuComplex*<sp/>DSPCore::get_third_stage_output_p(){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>return<sp/>third_stage_output_d;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">std::vector&lt;double&gt;<sp/>DSPCore::get_rx_freqs()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>return<sp/>rx_freqs;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Gets<sp/>the<sp/>CUDA<sp/>stream<sp/>this<sp/>DSPCore&apos;s<sp/>work<sp/>is<sp/>associated<sp/>to.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@return<sp/><sp/><sp/><sp/><sp/>The<sp/>CUDA<sp/>stream.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">cudaStream_t<sp/>DSPCore::get_cuda_stream(){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>return<sp/>stream;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Gets<sp/>the<sp/>total<sp/>GPU<sp/>process<sp/>timing<sp/>in<sp/>milliseconds.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@return<sp/><sp/><sp/><sp/><sp/>The<sp/>total<sp/>process<sp/>timing.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">float<sp/>DSPCore::get_total_timing()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>return<sp/>total_process_timing_ms;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">/**</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@brief<sp/><sp/><sp/><sp/><sp/><sp/>Gets<sp/>the<sp/>total<sp/>decimation<sp/>timing<sp/>in<sp/>milliseconds.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*<sp/>@return<sp/><sp/><sp/><sp/><sp/>The<sp/>decimation<sp/>timing.</highlight></codeline>
+<codeline><highlight class="normal"><sp/>*/</highlight></codeline>
+<codeline><highlight class="normal">float<sp/>DSPCore::get_decimate_timing()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>return<sp/>decimate_kernel_timing_ms;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">cuComplex*<sp/>DSPCore::get_first_stage_output_h()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>return<sp/>first_stage_output_h;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">cuComplex*<sp/>DSPCore::get_second_stage_output_h()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>return<sp/>second_stage_output_h;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">cuComplex*<sp/>DSPCore::get_third_stage_output_h()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>return<sp/>third_stage_output_h;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">uint32_t<sp/>DSPCore::get_num_antennas()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>return<sp/>num_antennas;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">uint32_t<sp/>DSPCore::get_num_first_stage_samples_per_antenna()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>return<sp/>num_first_stage_samples_per_antenna;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">uint32_t<sp/>DSPCore::get_num_second_stage_samples_per_antenna()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>return<sp/>num_second_stage_samples_per_antenna;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">uint32_t<sp/>DSPCore::get_num_third_stage_samples_per_antenna()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>return<sp/>num_third_stage_samples_per_antenna;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">uint32_t<sp/>DSPCore::get_sequence_num()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>return<sp/>sequence_num;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline></codeline>
+<codeline></codeline>
+<codeline></codeline>
+    </programlisting>
+    <location file="rx_signal_processing/dsp.cu"/>
+  </compounddef>
+</doxygen>
